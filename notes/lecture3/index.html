@@ -1043,6 +1043,275 @@ KL(P||Q) = \sum_i \sum_j p_{j|i}\log \frac{p_{j|i}}{q_{j|i}}
 <li>t-SNE is best for visualization, capturing local structures.</li>
 <li>Feature selection methods improve performance and interpretability for predictive modeling.</li>
 </ul>
+<h1 id="dimensionality-reduction-svd-pca-mf-nmf">Dimensionality Reduction (SVD • PCA • MF • NMF)<a class="headerlink" href="#dimensionality-reduction-svd-pca-mf-nmf" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="motivation">🧭 Motivation<a class="headerlink" href="#motivation" title="Permanent link">&para;</a></h2>
+<p>We are deluged with data. Essential information often lives in a much <strong>smaller-dimensional subspace</strong>. Dimensionality reduction aims to:</p>
+<ul>
+<li>compress data (fewer numbers, less storage),</li>
+<li>denoise (throw away directions dominated by noise),</li>
+<li>uncover structure (clusters, topics, latent factors),</li>
+<li>speed up downstream learning.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+  X[High-dim Data X ∈ R^{m×n}] --&gt;|Decompose/Project| Z[Low-dim Representation]
+  Z --&gt;|Reconstruct| Xhat[Approximate X]
+  Xhat --&gt;|Error||e||Reconstruction Error||
+  Z --&gt; Models[Downstream models: kNN, SVM, regressors]
+  subgraph Families
+    A1[SVD / PCA (linear, global)]
+    A2[MF / NMF (parts-based, sparse)]
+    A3[t-SNE / UMAP (nonlinear, local)]
+  end
+  X --&gt; A1
+  X --&gt; A2
+  X --&gt; A3</code></pre>
+<hr />
+<h2 id="1-singular-value-decomposition-svd">1) Singular Value Decomposition (SVD)<a class="headerlink" href="#1-singular-value-decomposition-svd" title="Permanent link">&para;</a></h2>
+<h3 id="definition">Definition<a class="headerlink" href="#definition" title="Permanent link">&para;</a></h3>
+<p>For any real matrix <span class="arithmatex">\(X \in \mathbb{R}^{m\times n}\)</span>:</p>
+<div class="arithmatex">\[
+X = U\,\Sigma\,V^T,
+\]</div>
+<p>where</p>
+<ul>
+<li><span class="arithmatex">\(U\in\mathbb{R}^{m\times m}\)</span> and <span class="arithmatex">\(V\in\mathbb{R}^{n\times n}\)</span> are <strong>orthogonal</strong> (<span class="arithmatex">\(U^TU=I\)</span>, <span class="arithmatex">\(V^TV=I\)</span>),</li>
+<li><span class="arithmatex">\(\Sigma\in\mathbb{R}^{m\times n}\)</span> is diagonal with non‑negative <strong>singular values</strong> <span class="arithmatex">\(\sigma_1\ge\sigma_2\ge\cdots\ge0\)</span>.</li>
+</ul>
+<h3 id="intuition">Intuition<a class="headerlink" href="#intuition" title="Permanent link">&para;</a></h3>
+<p>A linear map = <strong>rotate (V)</strong> → <strong>scale (Σ)</strong> → <strong>rotate (U)</strong>. Large <span class="arithmatex">\(\sigma_i\)</span> indicate energetic directions.</p>
+<pre class="mermaid"><code>graph TD
+  V[Rotate by V^T] --&gt; S[Scale by Σ] --&gt; U[Rotate by U]</code></pre>
+<h3 id="best-rankk-approximation-eckartyoung">Best rank‑k approximation (Eckart–Young)<a class="headerlink" href="#best-rankk-approximation-eckartyoung" title="Permanent link">&para;</a></h3>
+<p>Let <span class="arithmatex">\(X_k = U_{:,1:k}\,\Sigma_{1:k,1:k}\,V_{:,1:k}^T\)</span>. Then for any matrix <span class="arithmatex">\(Y\)</span> with <span class="arithmatex">\(\operatorname{rank}(Y)\le k\)</span>:</p>
+<div class="arithmatex">\[
+\|X - X_k\|_F \le \|X - Y\|_F\quad\text{and}\quad \|X - X_k\|_2 = \sigma_{k+1}.
+\]</div>
+<h3 id="worked-example-exact-svd-of-a-22-matrix">🔢 Worked Example – Exact SVD of a 2×2 matrix<a class="headerlink" href="#worked-example-exact-svd-of-a-22-matrix" title="Permanent link">&para;</a></h3>
+<p>Let</p>
+<div class="arithmatex">\[
+X=\begin{bmatrix}3 &amp; 1\\1 &amp; 3\end{bmatrix}.
+\]</div>
+<ol>
+<li>Compute <span class="arithmatex">\(X^TX=\begin{bmatrix}10&amp;6\\6&amp;10\end{bmatrix}\)</span>.</li>
+<li>Eigenpairs of <span class="arithmatex">\(X^TX\)</span>:</li>
+<li><span class="arithmatex">\(\lambda_1=16\)</span> with eigenvector <span class="arithmatex">\(v_1=\tfrac{1}{\sqrt2}[1,\,1]^T\)</span>,</li>
+<li><span class="arithmatex">\(\lambda_2=4\)</span> with eigenvector <span class="arithmatex">\(v_2=\tfrac{1}{\sqrt2}[1,\,-1]^T\)</span>. Hence singular values: <span class="arithmatex">\(\sigma_1=\sqrt{16}=4\)</span>, <span class="arithmatex">\(\sigma_2=\sqrt{4}=2\)</span>. Let <span class="arithmatex">\(V=[v_1\ v_2]\)</span>.</li>
+<li>Compute left vectors: <span class="arithmatex">\(u_i = \tfrac{1}{\sigma_i} X v_i\)</span>.</li>
+<li><span class="arithmatex">\(u_1 = \tfrac{1}{4}Xv_1 = \tfrac{1}{4}\tfrac{1}{\sqrt2}[4,\,4]^T = \tfrac{1}{\sqrt2}[1,1]^T\)</span>,</li>
+<li><span class="arithmatex">\(u_2 = \tfrac{1}{2}Xv_2 = \tfrac{1}{2}\tfrac{1}{\sqrt2}[2,\,-2]^T = \tfrac{1}{\sqrt2}[1,-1]^T\)</span>. Let <span class="arithmatex">\(U=[u_1\ u_2]\)</span>, <span class="arithmatex">\(\Sigma=\operatorname{diag}(4,2)\)</span>.</li>
+<li>Verify: <span class="arithmatex">\(U\Sigma V^T=X\)</span>.</li>
+</ol>
+<h3 id="worked-example-rank1-truncation-error">🔢 Worked Example – Rank‑1 truncation &amp; error<a class="headerlink" href="#worked-example-rank1-truncation-error" title="Permanent link">&para;</a></h3>
+<p>Rank‑1 approximation <span class="arithmatex">\(X_1=4\,u_1 v_1^T\)</span>. Error in spectral norm = <span class="arithmatex">\(\sigma_2=2\)</span>. In Frobenius norm: <span class="arithmatex">\(\|X-X_1\|_F=\sqrt{\sigma_2^2}=2\)</span>.</p>
+<h3 id="power-iteration-computing-top-singular-vector">Power Iteration (computing top singular vector)<a class="headerlink" href="#power-iteration-computing-top-singular-vector" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Initialize <span class="arithmatex">\(u^{(0)}\)</span> randomly.</li>
+<li>Iterate: <span class="arithmatex">\(v^{(t)}=X^Tu^{(t)};\ u^{(t+1)} = Xv^{(t)}/\|Xv^{(t)}\|\)</span>.</li>
+<li>Converges to top left singular vector.</li>
+</ul>
+<pre class="mermaid"><code>sequenceDiagram
+  participant U as u^(t)
+  participant XT as X^T
+  participant V as v^(t)
+  participant X as X
+  U-&gt;&gt;XT: v = X^T u
+  XT--&gt;&gt;V: v^(t)
+  V-&gt;&gt;X: u' = X v
+  X--&gt;&gt;U: normalize(u')</code></pre>
+<hr />
+<h2 id="2-principal-component-analysis-pca">2) Principal Component Analysis (PCA)<a class="headerlink" href="#2-principal-component-analysis-pca" title="Permanent link">&para;</a></h2>
+<h3 id="two-equivalent-views">Two equivalent views<a class="headerlink" href="#two-equivalent-views" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Eigenview</strong> on covariance: with centered data <span class="arithmatex">\(X_c\)</span>, <span class="arithmatex">\(\tfrac{1}{n}X_cX_c^T = U\Lambda U^T\)</span>. PCs are columns of <span class="arithmatex">\(U\)</span>.</li>
+<li><strong>SVD view</strong>: <span class="arithmatex">\(X_c=U\Sigma V^T\)</span>. Then principal directions = columns of <span class="arithmatex">\(U\)</span>; variances = <span class="arithmatex">\(\sigma_i^2/(n-1)\)</span>.</li>
+</ol>
+<h3 id="algorithm">Algorithm<a class="headerlink" href="#algorithm" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Center features: <span class="arithmatex">\(X_c = X - \mu 1^T\)</span>.</li>
+<li>Compute SVD: <span class="arithmatex">\(X_c=U\Sigma V^T\)</span>.</li>
+<li>Choose <span class="arithmatex">\(k\)</span> via explained variance ratio <span class="arithmatex">\(\sum_{i=1}^k \sigma_i^2 / \sum_{i} \sigma_i^2\)</span>.</li>
+<li>Low‑dim representation (scores): <span class="arithmatex">\(Z=U_{:,1:k}^T X_c\)</span>.</li>
+<li>Reconstruction: <span class="arithmatex">\(\hat X = U_{:,1:k}Z + \mu 1^T\)</span>.</li>
+</ol>
+<pre class="mermaid"><code>flowchart LR
+  A[Raw data X] --&gt; B[Center by mean μ]
+  B --&gt; C[SVD of X_c]
+  C --&gt; D[Pick k by EVR]
+  D --&gt; E[Scores Z = U_k^T X_c]
+  E --&gt; F[Use Z for ML]
+  E --&gt; G[Reconstruct X̂ = U_k Z + μ]</code></pre>
+<h3 id="worked-example-pca-on-a-2d-toy-dataset">🔢 Worked Example – PCA on a 2D toy dataset<a class="headerlink" href="#worked-example-pca-on-a-2d-toy-dataset" title="Permanent link">&para;</a></h3>
+<p>Data (n=5 points): <span class="arithmatex">\((2,0),(0,2),(3,1),(4,0),(0,3)\)</span>.</p>
+<ol>
+<li>Mean: <span class="arithmatex">\(\mu=[1.8,\ 1.2]^T\)</span>. Centered matrix</li>
+</ol>
+<div class="arithmatex">\[
+X_c=\begin{bmatrix}
+0.2 &amp; -1.2\\ -1.8 &amp; 0.8\\ 1.2 &amp; -0.2\\ 2.2 &amp; -1.2\\ -1.8 &amp; 1.8
+\end{bmatrix}.
+\]</div>
+<ol>
+<li>Covariance: <span class="arithmatex">\(C=\tfrac{1}{n-1}X_c^TX_c=\begin{bmatrix}3.7 &amp; -2.9\\ -2.9 &amp; 2.3\end{bmatrix}.\)</span></li>
+<li>Eigenpairs (rounded): <span class="arithmatex">\(\lambda_1\approx5.89\)</span> (dir. <span class="arithmatex">\(v_1\propto[0.82,-0.57]\)</span>), <span class="arithmatex">\(\lambda_2\approx0.11\)</span>.</li>
+<li><strong>Explained variance</strong> of PC1: <span class="arithmatex">\(5.89/(5.89+0.11)\approx98.2\%\)</span>.</li>
+<li>Project onto PC1: scores = <span class="arithmatex">\(Z = X_c v_1\)</span> (one scalar per point).</li>
+<li>Reconstruction with <span class="arithmatex">\(k=1\)</span>: <span class="arithmatex">\(\hat X = (v_1 v_1^T)X_c + \mu\)</span>.\
+   Result: good 1D compression with tiny error (since <span class="arithmatex">\(\lambda_2\)</span> small).</li>
+</ol>
+<h3 id="pca-for-images-patch-pca">PCA for images (patch PCA)<a class="headerlink" href="#pca-for-images-patch-pca" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Patch size 12×12 → 144‑D.</li>
+<li>Compute PCs → basis filters (edges, blobs).</li>
+<li>Reconstruction error vs k typically decays fast; keep <span class="arithmatex">\(k\)</span> around 20–60 for strong compression on patches.</li>
+</ul>
+<hr />
+<h2 id="3-latent-semantic-indexing-lsi-via-svd-text">3) Latent Semantic Indexing (LSI) via SVD (text)<a class="headerlink" href="#3-latent-semantic-indexing-lsi-via-svd-text" title="Permanent link">&para;</a></h2>
+<p>Given a <strong>term–document</strong> matrix <span class="arithmatex">\(X\)</span> (tf or tf–idf). Compute rank‑<span class="arithmatex">\(k\)</span> SVD: <span class="arithmatex">\(X\approx U_k\Sigma_kV_k^T\)</span>.</p>
+<ul>
+<li>Columns of <span class="arithmatex">\(U_k\)</span> give <strong>term embeddings</strong>; columns of <span class="arithmatex">\(V_k\)</span> give <strong>document embeddings</strong>; <span class="arithmatex">\(\Sigma_k\)</span> rescales.</li>
+<li>Similarity in this space captures <strong>latent topics</strong> even if exact words differ.</li>
+</ul>
+<h3 id="worked-example-mini-tdm-3-terms-3-docs">🔢 Worked Example – Mini TDM (3 terms × 3 docs)<a class="headerlink" href="#worked-example-mini-tdm-3-terms-3-docs" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[
+X=\begin{bmatrix}
+1&amp;1&amp;0\\
+1&amp;0&amp;1\\
+0&amp;1&amp;1
+\end{bmatrix}.
+\]</div>
+<ul>
+<li>Full SVD gives <span class="arithmatex">\(\sigma\approx(2,1,0)\)</span>.</li>
+<li>Rank‑2 LSI keeps first two singular values/vectors; cosine similarities between docs improve (synonymy effect).</li>
+</ul>
+<hr />
+<h2 id="4-matrix-factorization-mf">4) Matrix Factorization (MF)<a class="headerlink" href="#4-matrix-factorization-mf" title="Permanent link">&para;</a></h2>
+<p>We model an (often <strong>incomplete</strong>) matrix <span class="arithmatex">\(R\in\mathbb{R}^{n_u\times n_i}\)</span> of user–item interactions as</p>
+<div class="arithmatex">\[
+R \approx U^T V + b\,1^T + 1\,\tilde b^T,
+\]</div>
+<p>where <span class="arithmatex">\(U\in\mathbb{R}^{r\times n_u}\)</span> and <span class="arithmatex">\(V\in\mathbb{R}^{r\times n_i}\)</span> are latent factors, and <span class="arithmatex">\(b,\tilde b\)</span> biases.</p>
+<h3 id="objective-with-l2-regularization">Objective (with L2 regularization)<a class="headerlink" href="#objective-with-l2-regularization" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[
+\min_{U,V,b,\tilde b} \sum_{(i,j)\in\Omega} (r_{ij}-u_i^T v_j - b_i - \tilde b_j)^2 
++ \lambda(\|U\|_F^2+\|V\|_F^2 + \|b\|_2^2 + \|\tilde b\|_2^2),
+\]</div>
+<p>where <span class="arithmatex">\(\Omega\)</span> is the set of observed entries.</p>
+<h3 id="algorithms">Algorithms<a class="headerlink" href="#algorithms" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>ALS</strong> (Alternating Least Squares): fix <span class="arithmatex">\(U\)</span>, solve least squares for <span class="arithmatex">\(V\)</span>; swap. Scales well in Spark.</li>
+<li><strong>SGD</strong>: update on each observed triple using gradients; supports online/streaming.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+  R[Observed ratings R] --&gt; ALS{ALS Loop}
+  ALS --&gt;|fix U| SolveV[Solve for each v_j]
+  ALS --&gt;|fix V| SolveU[Solve for each u_i]
+  SolveU --&gt; ALS
+  SolveV --&gt; ALS
+  ALS --&gt; Pred[Predict r̂_ij = u_i^T v_j + b_i + b̃_j]</code></pre>
+<h3 id="worked-example-tiny-mf-with-als-rank-r2">🔢 Worked Example – Tiny MF with ALS (rank r=2)<a class="headerlink" href="#worked-example-tiny-mf-with-als-rank-r2" title="Permanent link">&para;</a></h3>
+<p>Observed ratings ("?" missing):</p>
+<div class="arithmatex">\[
+R=\begin{array}{c|ccc}
+ &amp; i_1 &amp; i_2 &amp; i_3 \\\hline
+u_1 &amp; 5 &amp; 3 &amp; ?\\
+u_2 &amp; 4 &amp; ? &amp; 1\\
+\end{array}
+\]</div>
+<p>Initialize <span class="arithmatex">\(U=\begin{bmatrix}1&amp;0\\0&amp;1\end{bmatrix}\)</span>, <span class="arithmatex">\(V=\begin{bmatrix}1&amp;1&amp;1\\1&amp;1&amp;1\end{bmatrix}\)</span>. <strong>One ALS sweep</strong> (showing item 2):</p>
+<ul>
+<li>Users who rated <span class="arithmatex">\(i_2\)</span>: only <span class="arithmatex">\(u_1\)</span> with rating 3. Solve <span class="arithmatex">\(\min_{v_2}\ (3 - u_1^Tv_2)^2 + \lambda\|v_2\|^2\)</span>. With <span class="arithmatex">\(u_1=[1,0]^T\)</span> and <span class="arithmatex">\(\lambda=0.1\)</span>, closed form gives <span class="arithmatex">\(v_2 = (U^{(2)T}U^{(2)}+\lambda I)^{-1}U^{(2)T}r^{(2)} = (1.1I)^{-1}[3,0]^T = [2.727,0]^T\)</span>. Repeat for other items and then solve for user vectors given items. After a few ALS rounds, predict missing: <span class="arithmatex">\(\hat r_{1,3}=u_1^Tv_3 + b_1 + \tilde b_3\)</span> (biases often raise accuracy by 5–10%).</li>
+</ul>
+<h3 id="worked-example-onestep-sgd-update">🔢 Worked Example – One‑step SGD update<a class="headerlink" href="#worked-example-onestep-sgd-update" title="Permanent link">&para;</a></h3>
+<p>Loss on observed <span class="arithmatex">\((i,j)=(1,2)\)</span>: <span class="arithmatex">\(\ell = (r_{12}-u_1^Tv_2)^2 + \lambda(\|u_1\|^2+\|v_2\|^2)\)</span>. Gradients: <span class="arithmatex">\(\nabla_{u_1}=-2(r_{12}-u_1^Tv_2)v_2 + 2\lambda u_1\)</span>, similarly for <span class="arithmatex">\(v_2\)</span>. Update with step <span class="arithmatex">\(\eta\)</span>: <span class="arithmatex">\(u_1 \leftarrow u_1 - \eta\nabla_{u_1}\)</span>, <span class="arithmatex">\(v_2 \leftarrow v_2 - \eta\nabla_{v_2}\)</span>.</p>
+<hr />
+<h2 id="5-nonnegative-matrix-factorization-nmf">5) Non‑negative Matrix Factorization (NMF)<a class="headerlink" href="#5-nonnegative-matrix-factorization-nmf" title="Permanent link">&para;</a></h2>
+<p>We seek non‑negative factors <span class="arithmatex">\(W\in\mathbb{R}_+^{m\times r}\)</span>, <span class="arithmatex">\(H\in\mathbb{R}_+^{r\times n}\)</span> such that <span class="arithmatex">\(X \approx WH.\)</span> This encourages <strong>parts‑based</strong> representations (e.g., eyes, nose, mouth for faces; topics for text).</p>
+<h3 id="multiplicative-updates-lee-seung">Multiplicative updates (Lee &amp; Seung)<a class="headerlink" href="#multiplicative-updates-lee-seung" title="Permanent link">&para;</a></h3>
+<p>For objective <span class="arithmatex">\(\min_{W,H}\ \|X-WH\|_F^2\)</span>:</p>
+<div class="arithmatex">\[
+H \leftarrow H \odot \frac{W^T X}{W^T W H},\quad
+W \leftarrow W \odot \frac{X H^T}{W H H^T}\quad (\odot: \text{elementwise}).
+\]</div>
+<h3 id="worked-example-nmf-on-a-43-matrix-1-iteration">🔢 Worked Example – NMF on a 4×3 matrix (1 iteration)<a class="headerlink" href="#worked-example-nmf-on-a-43-matrix-1-iteration" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[
+X = \begin{bmatrix}4&amp;1&amp;0\\3&amp;0&amp;1\\0&amp;2&amp;3\\0&amp;1&amp;4\end{bmatrix},\quad r=2,
+\ W=\begin{bmatrix}1&amp;0.5\\1&amp;0.5\\0.5&amp;1\\0.5&amp;1\end{bmatrix},\ H=\begin{bmatrix}1&amp;1&amp;1\\1&amp;1&amp;1\end{bmatrix}.
+\]</div>
+<p>Compute updates (showing <span class="arithmatex">\(H\)</span> numerator/denominator first column):</p>
+<ul>
+<li><span class="arithmatex">\(W^TX = \begin{bmatrix}7&amp;2&amp;1\\4.5&amp;2&amp;4.5\end{bmatrix}\Rightarrow (W^TX)_{:,1}=[7,\ 4.5]^T\)</span>.</li>
+<li><span class="arithmatex">\(W^TWH = (W^TW)H\)</span> with <span class="arithmatex">\(W^TW=\begin{bmatrix}2.5&amp;2\\2&amp;2.5\end{bmatrix}\)</span> gives first col <span class="arithmatex">\([4.5,\ 4.5]^T\)</span>.</li>
+<li>New first column of <span class="arithmatex">\(H\)</span>: elementwise multiply by <span class="arithmatex">\([7/4.5,\ 4.5/4.5]=[1.556,\ 1]\)</span>. Repeat for other columns; then update <span class="arithmatex">\(W\)</span> analogously. Observation: factors stay non‑negative and begin specializing columns/rows.</li>
+</ul>
+<hr />
+<h2 id="6-pca-vs-autoencoders-ae-encoderdecoder-view">6) PCA vs Autoencoders (AE) – Encoder–Decoder view<a class="headerlink" href="#6-pca-vs-autoencoders-ae-encoderdecoder-view" title="Permanent link">&para;</a></h2>
+<ul>
+<li>PCA: linear AE with encoder <span class="arithmatex">\(U_k^T\)</span>, decoder <span class="arithmatex">\(U_k\)</span>, MSE loss, orthogonal columns.</li>
+<li>AE: can be deep/nonlinear; objective can include sparsity, denoising, contrastive losses.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+  X["X ∈ R^{m×n}"] --&gt; E["Encoder fθ"]
+  E --&gt; Z["z ∈ R^{k×n}"]
+  Z --&gt; D["Decoder gφ"]
+  D --&gt; Xhat["X̂"]
+
+  X --- PCA["PCA"]
+  PCA --- Xhat
+  X --- AE["Autoencoder"]
+  AE --- Xhat
+
+  %% Style edge labels as separate nodes
+  PCA:::linear
+  AE:::nonlinear
+
+  classDef linear fill:#d9ead3,stroke:#333,stroke-width:1px;
+  classDef nonlinear fill:#fce5cd,stroke:#333,stroke-width:1px;
+</code></pre>
+<hr />
+<h2 id="7-practical-guidance-diagnostics">7) Practical guidance &amp; diagnostics<a class="headerlink" href="#7-practical-guidance-diagnostics" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Centering &amp; Scaling</strong>: PCA requires centering; consider standardizing features with different scales.</li>
+<li><strong>Choosing k</strong>: Scree plot (<span class="arithmatex">\(\sigma_i\)</span>), cumulative EVR ≥ 0.90–0.99 for compression; cross‑validate for downstream task.</li>
+<li><strong>Out‑of‑sample transforms</strong>: Store <span class="arithmatex">\(\mu\)</span> and <span class="arithmatex">\(U_k\)</span> to project new data: <span class="arithmatex">\(z=U_k^T(x-\mu)\)</span>.</li>
+<li><strong>Cold start in MF</strong>: use content features or priors; biases stabilize.</li>
+<li><strong>Regularization</strong>: <span class="arithmatex">\(\lambda\)</span> prevents overfitting in MF; shrink small PCs if noisy (Tikhonov).</li>
+<li><strong>Sparsity</strong>: Prefer MF/NMF when matrices are highly sparse; SVD on dense TDM often uses truncated solvers (Lanczos).</li>
+</ul>
+<hr />
+<h2 id="8-extended-solved-miniproblems">8) Extended solved mini‑problems<a class="headerlink" href="#8-extended-solved-miniproblems" title="Permanent link">&para;</a></h2>
+<h3 id="81-pca-by-hand-32-matrix">8.1 PCA by hand (3×2 matrix)<a class="headerlink" href="#81-pca-by-hand-32-matrix" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[
+X=\begin{bmatrix}2&amp;0\\0&amp;2\\3&amp;1\end{bmatrix},\ \mu=\tfrac{1}{3}[5,\ 1]^T,\ X_c=X-\mu 1^T.
+\]</div>
+<p>Compute SVD of <span class="arithmatex">\(X_c\)</span> (algebra similar to the earlier 2×2 SVD). Keep largest <span class="arithmatex">\(\sigma\)</span> only; reconstruct <span class="arithmatex">\(\hat X\)</span>; compute error <span class="arithmatex">\(\|X-\hat X\|_F\)</span>.</p>
+<h3 id="82-filling-a-missing-rating-with-mf-closed-form-no-bias">8.2 Filling a missing rating with MF (closed form, no bias)<a class="headerlink" href="#82-filling-a-missing-rating-with-mf-closed-form-no-bias" title="Permanent link">&para;</a></h3>
+<p>Given two users/two items with observed <span class="arithmatex">\(r_{11}=5, r_{21}=4, r_{12}=3\)</span>; estimate <span class="arithmatex">\(r_{22}\)</span> with rank‑1 MF and <span class="arithmatex">\(\lambda=0\)</span>.\
+Solve <span class="arithmatex">\(\min_{u_1,u_2,v_1,v_2}\sum (r_{ij}-u_iv_j)^2\)</span>. Closed form (normal equations) gives <span class="arithmatex">\(u_1=\tfrac{5}{v_1}, u_2=\tfrac{4}{v_1}, v_2=\tfrac{3}{u_1}\Rightarrow r_{22}=u_2v_2=\tfrac{4}{v_1}\cdot\tfrac{3}{u_1}=\tfrac{12}{5}\approx2.4\)</span> (one of the valid minima). Adding <span class="arithmatex">\(\lambda&gt;0\)</span> stabilizes.</p>
+<h3 id="83-choosing-k-via-error-bound">8.3 Choosing k via error bound<a class="headerlink" href="#83-choosing-k-via-error-bound" title="Permanent link">&para;</a></h3>
+<p>If singular values (descending) are <span class="arithmatex">\((10, 3, 1, 0.2, …)\)</span> and we keep <span class="arithmatex">\(k=2\)</span>, then</p>
+<ul>
+<li>spectral‑norm error = <span class="arithmatex">\(\sigma_{3}=1\)</span>,</li>
+<li>relative Frobenius error <span class="arithmatex">\(\approx\sqrt{1^2+0.2^2}/\sqrt{10^2+3^2+1^2+0.2^2}\approx\tfrac{1.02}{10.53}\approx9.7\%\)</span>.</li>
+</ul>
+<h3 id="84-nmf-topic-sketch-on-tdm-toy">8.4 NMF topic sketch on TDM (toy)<a class="headerlink" href="#84-nmf-topic-sketch-on-tdm-toy" title="Permanent link">&para;</a></h3>
+<p>Terms = {<strong>color, fabric, size</strong>}, Docs = {d1,d2,d3} with <span class="arithmatex">\(X=\begin{bmatrix}4&amp;1&amp;0\\3&amp;0&amp;1\\0&amp;2&amp;3\end{bmatrix}\)</span>. With <span class="arithmatex">\(r=2\)</span>, one topic leans on {color,fabric}, the other on {fabric,size}. Multiplicative updates separate them over iterations.</p>
+<hr />
+<h2 id="9-quick-reference-cheatsheet">9) Quick reference (cheatsheet)<a class="headerlink" href="#9-quick-reference-cheatsheet" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>SVD</strong>: <span class="arithmatex">\(X=U\Sigma V^T\)</span>; rank‑k truncation is optimal (EYM theorem).</li>
+<li><strong>PCA</strong>: SVD of centered data; scores = <span class="arithmatex">\(U_k^T X_c\)</span>; reconstruction = <span class="arithmatex">\(U_k U_k^T X_c + \mu\)</span>.</li>
+<li><strong>MF (ALS)</strong>: solve <span class="arithmatex">\((U^{(j)T}U^{(j)}+\lambda I)v_j=U^{(j)T}r^{(j)}\)</span>; symmetric for <span class="arithmatex">\(u_i\)</span>.</li>
+<li><strong>NMF</strong>: multiplicative updates; non‑negativity ⇒ parts‑based, interpretable factors.</li>
+</ul>
+<hr />
+<h3 id="appendix-a-notation">Appendix A — Notation<a class="headerlink" href="#appendix-a-notation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><span class="arithmatex">\(m\)</span>: features; <span class="arithmatex">\(n\)</span>: samples; <span class="arithmatex">\(r\)</span>: reduced rank.</li>
+<li><span class="arithmatex">\(\|\cdot\|_F\)</span>: Frobenius norm; <span class="arithmatex">\(\|\cdot\|_2\)</span>: spectral norm.</li>
+<li><span class="arithmatex">\(1\)</span>: all‑ones vector; <span class="arithmatex">\(I\)</span>: identity.</li>
+</ul>
+<hr />
 
 
 
@@ -1063,7 +1332,7 @@ KL(P||Q) = \sum_i \sum_j p_{j|i}\log \frac{p_{j|i}}{q_{j|i}}
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 16, 2025 09:17:12 UTC">August 16, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 16, 2025 09:54:55 UTC">August 16, 2025</span>
   </span>
 
     
