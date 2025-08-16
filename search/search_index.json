@@ -1,0 +1,1 @@
+{"config":{"lang":["en"],"separator":"[\\s\\-]+","pipeline":["stopWordFilter"]},"docs":[{"location":"","title":"Welcome \ud83d\udc4b","text":"<p>This is my ML notes site.</p>"},{"location":"cheatsheets/","title":"Cheatsheets","text":""},{"location":"notes/supervised/","title":"Supervised Learning","text":""}]}
