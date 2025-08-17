@@ -1263,6 +1263,465 @@ flowchart TB
 <li>Music generation</li>
 </ol>
 <hr />
+<h1 id="representation-learning">Representation Learning<a class="headerlink" href="#representation-learning" title="Permanent link">&para;</a></h1>
+<p>Representation learning is a set of techniques in machine learning that enables a system to <strong>automatically discover useful representations of raw data</strong>. These representations transform raw inputs into more structured formats that make downstream tasks such as <strong>feature detection, classification, or regression</strong> easier.</p>
+<p>Instead of manually engineering features, representation learning techniques automatically identify the right abstractions.</p>
+<hr />
+<h2 id="types-of-representation-learning">Types of Representation Learning<a class="headerlink" href="#types-of-representation-learning" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Text Representations</strong></li>
+<li>Converts raw text into vectors that encode semantic meaning.</li>
+<li>Captures <strong>word similarity</strong>, <strong>syntactic roles</strong>, and <strong>semantic context</strong>.</li>
+<li>
+<p>Examples:</p>
+<ul>
+<li><strong>Word2Vec</strong> (continuous representations of words)</li>
+<li><strong>BERT</strong> (contextual embeddings)</li>
+</ul>
+</li>
+<li>
+<p><strong>Graph Representations</strong></p>
+</li>
+<li>Encodes nodes and edges into dense vectors.</li>
+<li>Preserves structural information such as neighborhood, connectivity, and paths.</li>
+<li>
+<p>Examples:</p>
+<ul>
+<li><strong>DeepWalk</strong> (random walks + Skip-gram)</li>
+<li><strong>node2vec</strong> (biased random walks for flexible embeddings)</li>
+</ul>
+</li>
+<li>
+<p><strong>Image Representations</strong></p>
+</li>
+<li>Learns features automatically from pixels.</li>
+<li><strong>Self-supervised contrastive learning</strong> extracts features without labeled data.</li>
+<li>Enables clustering and transfer learning across visual tasks.</li>
+</ol>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Text
+      A["Raw Text corpus"] --&gt; B["Tokenizer"]
+      B --&gt; C["Context Windows"]
+      C --&gt; D["Embedding Model&lt;br&gt;Word2Vec / BERT"]
+      D --&gt; E["Downstream Tasks"]
+    end
+    subgraph Graph
+      G1["Graph Data&lt;br&gt;nodes &amp; edges"] --&gt; G2["Random Walks"]
+      G2 --&gt; G3["Skip-gram Training"]
+      G3 --&gt; G4["Node Embeddings"]
+    end
+    subgraph Image
+      I1["Unlabeled Images"] --&gt; I2["Augmentations"]
+      I2 --&gt; I3["Contrastive Objective"]
+      I3 --&gt; I4["Image Embeddings"]
+    end
+</code></pre>
+<hr />
+<h2 id="distributed-representations">Distributed Representations<a class="headerlink" href="#distributed-representations" title="Permanent link">&para;</a></h2>
+<p>A core idea in representation learning is moving from <strong>sparse representations</strong> (e.g., one-hot vectors) to <strong>dense distributed representations</strong> (embeddings).</p>
+<ul>
+<li><strong>One-hot representation (Sparse)</strong></li>
+<li>Each word is represented as a binary vector with a single 1.</li>
+<li>Does not capture similarity between words.</li>
+<li>
+<p>High dimensional and memory inefficient.
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>banana = [0 0 0 0 0 0 0 1 0 0 0]
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>mango  = [0 0 0 0 0 1 0 0 0 0 0]
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>dog    = [0 0 1 0 0 0 0 0 0 0 0]
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Distributed representation (Dense)</strong></p>
+</li>
+<li>Each word is a low-dimensional vector of real numbers.</li>
+<li>Similar words have similar vectors.</li>
+<li>Captures semantic and syntactic properties.
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>banana = [0.23  0.1 -0.1 -0.4 -0.01 -0.121 0.342 0.561]
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>mango  = [-0.73 0.0 -0.5  0.4  0.4   0.591 0.732 0.891]
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>dog    = [0.61  0.21 0.55 0.45 0.134 0.752 0.525 0.64 ]
+</span></code></pre></div></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    O1[One-hot Vectors\nHigh-dim, sparse] -- limitations --&gt; L1[No similarity\ninfo]
+    O1 --&gt; L2[Large memory]
+    D1[Dense Embeddings\nLow-dim, real-valued] -- benefits --&gt; B1[Capture similarity]
+    D1 --&gt; B2[Generalize across contexts]
+    D1 --&gt; B3[Efficient storage]</code></pre>
+<hr />
+<h2 id="word2vec-word-representations">Word2Vec: Word Representations<a class="headerlink" href="#word2vec-word-representations" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><em>“You shall know a word by the company it keeps”</em> – J.R. Firth (1957)</p>
+</blockquote>
+<p>Word2Vec is a neural model that learns <strong>word embeddings</strong> by leveraging context.</p>
+<ul>
+<li>A word’s meaning is inferred from its <strong>neighboring words</strong> in a large corpus.</li>
+<li>Example:</li>
+<li>Target word: <em>banking</em>  </li>
+<li>Context words: <code>w_{t-1}, w_{t+1}, ...</code></li>
+</ul>
+<p>Word2Vec comes in two variants: <strong>CBOW</strong> and <strong>Skip-gram</strong>.</p>
+<hr />
+<h2 id="basic-idea-of-word2vec">Basic Idea of Word2Vec<a class="headerlink" href="#basic-idea-of-word2vec" title="Permanent link">&para;</a></h2>
+<p><strong>Input assumptions:</strong>
+- A huge corpus of text <span class="arithmatex">\(C\)</span>
+- A pre-defined vocabulary <span class="arithmatex">\(V\)</span></p>
+<p><strong>Representation:</strong>
+- Each word has two vectors:
+  - <span class="arithmatex">\( v_{w_t} \)</span>: word as a <strong>target</strong>
+  - <span class="arithmatex">\( v_{w_c} \)</span>: word as a <strong>context</strong></p>
+<h3 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Continuous Bag of Words (CBOW)</strong></li>
+<li>Predicts the <strong>target word</strong> given surrounding context words.</li>
+<li>
+<p>Uses softmax over similarity between the target vector and the <strong>sum of context vectors</strong>.</p>
+</li>
+<li>
+<p><strong>Skip-gram (SG)</strong></p>
+</li>
+<li>Predicts the <strong>context words</strong> given a target word.</li>
+<li>Uses softmax over similarity between target and context vectors.</li>
+</ol>
+<pre class="mermaid"><code>flowchart LR
+    subgraph CBOW
+        w1(("w_{t-2}")) --&gt; SUM(("Σ"))
+        w2(("w_{t-1}")) --&gt; SUM
+        w3(("w_{t+1}")) --&gt; SUM
+        w4(("w_{t+2}")) --&gt; SUM
+        SUM --&gt; target(("w_t"))
+    end
+
+    subgraph SkipGram
+        target2(("w_t")) --&gt; c1(("w_{t-2}"))
+        target2 --&gt; c2(("w_{t-1}"))
+        target2 --&gt; c3(("w_{t+1}"))
+        target2 --&gt; c4(("w_{t+2}"))
+    end
+</code></pre>
+<hr />
+<h2 id="skip-gram-with-window">Skip-gram with Window<a class="headerlink" href="#skip-gram-with-window" title="Permanent link">&para;</a></h2>
+<p>Skip-gram works by predicting context words within a fixed <strong>window size</strong> around the target word.</p>
+<p>For example, with a window size of 2:</p>
+<div class="arithmatex">\[
+P(w_{t-2} | w_t), P(w_{t-1} | w_t), P(w_{t+1} | w_t), P(w_{t+2} | w_t)
+\]</div>
+<pre class="mermaid"><code>flowchart LR
+    T(("banking&lt;br&gt;w_t")) --&gt; L1(("problems&lt;br&gt;w_{t-2}"))
+    T --&gt; L2(("turning&lt;br&gt;w_{t-1}"))
+    T --&gt; R1(("crises&lt;br&gt;w_{t+1}"))
+    T --&gt; R2(("as&lt;br&gt;w_{t+2}"))
+
+    classDef ctx fill:#fff,stroke:#999,stroke-width:1px;
+    class L1,L2,R1,R2 ctx;
+</code></pre>
+<p>This ensures both <strong>left</strong> and <strong>right</strong> contexts contribute to training.</p>
+<hr />
+<h2 id="skip-gram-objective-function">Skip-gram Objective Function<a class="headerlink" href="#skip-gram-objective-function" title="Permanent link">&para;</a></h2>
+<p>The optimization goal is:</p>
+<div class="arithmatex">\[
+\theta^* = \arg\max_{\theta} \prod_{i=1}^{T} \prod_{-m \leq j \leq m, j \neq 0} P(w_{i+j} | w_i; \theta)
+\]</div>
+<p>Equivalent minimization:</p>
+<div class="arithmatex">\[
+\theta^* = \arg\min_{\theta} -\frac{1}{T}\sum_{i=1}^T \sum_{-m \leq j \leq m, j \neq 0} \log P(w_{i+j} | w_i; \theta)
+\]</div>
+<p>Where probability is defined as:</p>
+<div class="arithmatex">\[
+P(w_{i+j} | w_i) = \frac{\exp(v_{w_i}^T v_{w_{i+j}})}{\sum_{w \in V} \exp(v_{w_i}^T v_{w_c})}
+\]</div>
+<ul>
+<li><strong>Similarity:</strong> computed as dot product of target and context vectors.</li>
+<li><strong>Normalization:</strong> softmax ensures probabilities sum to 1 over the entire vocabulary.</li>
+</ul>
+<pre class="mermaid"><code>flowchart TB
+    subgraph "Training Step"
+        A["Target word&lt;br&gt;v_{w_t}"] --&gt; D["Dot Product"]
+        C["Context word&lt;br&gt;v_{w_c}"] --&gt; D
+        D --&gt; S["Score"]
+        S --&gt; SM["Softmax /&lt;br&gt;Neg. Sampling"]
+        SM --&gt; L["Loss"]
+        L --&gt;|backprop| A
+        L --&gt;|backprop| C
+    end
+</code></pre>
+<hr />
+<h2 id="word2vec-properties">Word2Vec Properties<a class="headerlink" href="#word2vec-properties" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Embeddings place <strong>similar words close</strong> in vector space.</li>
+<li>Captures rich <strong>semantic relationships</strong>, for example:</li>
+<li><strong>Gender relationship:</strong> <code>king - man + woman ≈ queen</code></li>
+<li><strong>Verb tense:</strong> <code>walked - walking ≈ swam - swimming</code></li>
+<li><strong>Geographical relation:</strong> <code>Paris - France ≈ Berlin - Germany</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    K[king] --- M[man]
+    Q[queen] --- W[woman]
+    subgraph Analogies
+      direction LR
+      K --&gt;| - man + woman | Q
+    end
+    subgraph Tense
+      direction LR
+      Walked[walked] --&gt;| - walking | Delta1[Δ]
+      Swam[swam] --&gt;| - swimming | Delta2[Δ]
+      Delta1 --- Delta2
+    end
+    subgraph Capitals
+      direction LR
+      France --- Paris
+      Germany --- Berlin
+      France --&gt;|offset ≈| Germany
+      Paris --&gt;|offset ≈| Berlin
+    end</code></pre>
+<p>These relationships emerge naturally without explicit supervision.</p>
+<hr />
+<h2 id="negative-sampling">Negative Sampling<a class="headerlink" href="#negative-sampling" title="Permanent link">&para;</a></h2>
+<p>A challenge in Word2Vec is that the <strong>softmax denominator</strong> involves summing over the entire vocabulary, which is computationally expensive for large vocabularies.</p>
+<p><strong>Solution: Negative Sampling (a form of NCE)</strong>
+- Instead of updating all weights, only update a few sampled negative examples at each step.
+- The model learns to discriminate between:
+  - Positive (real context) pairs
+  - Negative (random noise) pairs</p>
+<p>New simplified objective:</p>
+<div class="arithmatex">\[
+\log \sigma(v_{w_t}^T v_{w_{c}}) + \sum_{l=1}^k \mathbb{E}_{w_l \sim P_n(w)} [\log \sigma(-v_{w_t}^T v_{w_l})]
+\]</div>
+<p>Where the <strong>noise distribution</strong> is:</p>
+<div class="arithmatex">\[
+P_n(w) \propto U(w)^{3/4}
+\]</div>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Sampling
+      T(("Target&lt;br&gt;w_t")) --&gt; P1(("Pos Context&lt;br&gt;w_c"))
+      T --&gt; N1(("Neg 1"))
+      T --&gt; N2(("Neg 2"))
+      T --&gt; Nk(("Neg k"))
+    end
+
+    P1 --&gt; L1["log σ(v_t^T v_c)"]
+    N1 --&gt; L2["log σ(-v_t^T v_{n1})"]
+    N2 --&gt; L3["log σ(-v_t^T v_{n2})"]
+    Nk --&gt; Lk["log σ(-v_t^T v_{nk})"]
+
+    L1 --&gt; SUM(("Sum Loss"))
+    L2 --&gt; SUM
+    L3 --&gt; SUM
+    Lk --&gt; SUM
+</code></pre>
+<p>This reduces training complexity while preserving embedding quality.</p>
+<hr />
+<h2 id="how-deepwalk-node2vec-connect-to-skip-gram">How DeepWalk / node2vec Connect to Skip-gram<a class="headerlink" href="#how-deepwalk-node2vec-connect-to-skip-gram" title="Permanent link">&para;</a></h2>
+<p>Both methods generate <strong>node sequences</strong> via random walks and then train a Skip-gram model on those sequences—treating walks like sentences.</p>
+<pre class="mermaid"><code>flowchart LR
+    G[Graph] --&gt; RW["Random Walks&lt;br&gt;(sequences of nodes)"]
+    RW --&gt; SG["Skip-gram Training"]
+    SG --&gt; Z["Node Embeddings"]
+
+    style G stroke-width:2px
+</code></pre>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Representation learning eliminates the need for manual feature engineering.</li>
+<li>Dense embeddings capture <strong>semantic, syntactic, and relational properties</strong> of data.</li>
+<li>Word2Vec is a landmark method for learning text representations using CBOW and Skip-gram.</li>
+<li>Techniques like <strong>negative sampling</strong> make large-scale training feasible.</li>
+<li>Graph and image modalities use analogous pipelines to learn meaningful embeddings without heavy labeling.</li>
+</ul>
+<p>Representation learning underpins many modern AI systems, from NLP to computer vision and graph learning.</p>
+<hr />
+<h1 id="advanced-topics-in-representation-learning">Advanced Topics in Representation Learning<a class="headerlink" href="#advanced-topics-in-representation-learning" title="Permanent link">&para;</a></h1>
+<h2 id="contextual-word-embeddings">Contextual Word Embeddings<a class="headerlink" href="#contextual-word-embeddings" title="Permanent link">&para;</a></h2>
+<p>Traditional embeddings like Word2Vec assign a <strong>single vector per word</strong>, regardless of context. However, the same word can mean different things in different contexts:</p>
+<ul>
+<li><em>open a </em><em>bank</em><em> account</em></li>
+<li><em>on the river </em><em>bank</em>**</li>
+</ul>
+<p>This motivates <strong>contextual embeddings</strong>, which adapt to surrounding words.</p>
+<hr />
+<h2 id="elmo-embeddings-from-language-models">ELMo (Embeddings from Language Models)<a class="headerlink" href="#elmo-embeddings-from-language-models" title="Permanent link">&para;</a></h2>
+<ul>
+<li>ELMo uses a <strong>2-layer bidirectional LSTM</strong> (biLM) trained as a language model.</li>
+<li>Unlike Word2Vec, which gives static embeddings, <strong>ELMo embeddings are dynamic</strong> and depend on the entire sentence context.</li>
+<li>Produces better representations for polysemous words.</li>
+</ul>
+<p><strong>Training Objective:</strong></p>
+<div class="arithmatex">\[
+\sum_{k=1}^{N} \Big( \log p(t_k | t_1, …, t_{k-1}; \theta_{LSTM}^{→}) + \log p(t_k | t_{k+1}, …, t_N; \theta_{LSTM}^{←}) \Big)
+\]</div>
+<pre class="mermaid"><code>flowchart TB
+    E1[Input E1] --&gt; L1[LSTM Forward]
+    E2[Input E2] --&gt; L1
+    E3[Input E3] --&gt; L1
+    E1 --&gt; L2[LSTM Backward]
+    E2 --&gt; L2
+    E3 --&gt; L2
+    L1 --&gt; O1[Contextual Embeddings]
+    L2 --&gt; O1</code></pre>
+<hr />
+<h2 id="bert-bidirectional-encoder-representations-from-transformers">BERT (Bidirectional Encoder Representations from Transformers)<a class="headerlink" href="#bert-bidirectional-encoder-representations-from-transformers" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Uses the <strong>Transformer architecture</strong> with multi-head self-attention.</li>
+<li>Generates <strong>bidirectional contextual embeddings</strong>, allowing words to "see" both left and right contexts simultaneously.</li>
+<li>Pretrained on two tasks:</li>
+<li><strong>Masked Language Modeling (MLM)</strong>: randomly mask tokens and predict them.</li>
+<li><strong>Next Sentence Prediction (NSP)</strong>: predict if sentence B follows sentence A.</li>
+</ul>
+<p><strong>Advantages:</strong>
+- Deep bidirectional attention captures richer context than LSTMs.
+- Strong transfer learning: pretrained weights can be fine-tuned on many downstream NLP tasks.</p>
+<pre class="mermaid"><code>flowchart TB
+    subgraph BERT Pretraining
+      direction TB
+      A[Input Tokens] --&gt; M1[Masked Tokens]
+      M1 --&gt; T[Transformer Layers]
+      T --&gt; MLM[Masked LM Prediction]
+      A2[Sentence A] --&gt; T
+      B2[Sentence B] --&gt; T
+      T --&gt; NSP[Next Sentence Prediction]
+    end</code></pre>
+<hr />
+<h2 id="bert-pretraining-tasks">BERT Pretraining Tasks<a class="headerlink" href="#bert-pretraining-tasks" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Masked Language Model (MLM):</strong></li>
+<li>Randomly mask 15% of tokens.</li>
+<li>Of these: 80% replaced with [MASK], 10% replaced with random tokens, 10% unchanged.</li>
+<li>
+<p>Example:</p>
+<ul>
+<li>Input: <em>the man went to the [MASK] to buy a [MASK] of milk</em></li>
+<li>Predictions: <code>store</code>, <code>gallon</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Next Sentence Prediction (NSP):</strong></p>
+</li>
+<li>Sentence A: <em>The man went to the store.</em></li>
+<li>Sentence B: <em>He bought a gallon of milk.</em> → Label = IsNextSentence</li>
+<li>Sentence B: <em>Penguins are flightless.</em> → Label = NotNextSentence</li>
+</ol>
+<hr />
+<h2 id="graph-embeddings-why">Graph Embeddings – Why?<a class="headerlink" href="#graph-embeddings-why" title="Permanent link">&para;</a></h2>
+<p>Graph data is ubiquitous:
+- <strong>Knowledge Graphs</strong> (search engines, question answering)
+- <strong>Social Graphs</strong> (friend/follow recommendations)
+- <strong>Recommendation Systems</strong> (products, items, users)</p>
+<pre class="mermaid"><code>flowchart LR
+    A((Alice)) --&gt;|visits| B((Paris))
+    A --&gt;|is interested in| C((Mona Lisa))
+    C --&gt;|is created by| D((Leonardo da Vinci))</code></pre>
+<hr />
+<h2 id="graph-basics">Graph Basics<a class="headerlink" href="#graph-basics" title="Permanent link">&para;</a></h2>
+<p>A graph is defined as:</p>
+<p>[
+G = (V, E)
+]
+- <span class="arithmatex">\( V \)</span>: set of vertices (nodes)
+- <span class="arithmatex">\( E \subset V \times V \)</span>: edges (connections)</p>
+<p><strong>Modalities:</strong>
+- Node embeddings
+- Edge embeddings
+- Subgraph embeddings
+- Whole-graph embeddings</p>
+<p>Goal: learn embeddings that preserve <strong>graph structure</strong> while being useful for downstream tasks.</p>
+<hr />
+<h2 id="deepwalk">DeepWalk<a class="headerlink" href="#deepwalk" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Generates random walks on the graph.</li>
+<li>Treats walks as sentences and applies <strong>Skip-gram</strong> for training node embeddings.</li>
+<li>Preserves both local and global graph structures.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    subgraph DeepWalk
+      N1((v1)) --&gt; N2((v5)) --&gt; N3((v7)) --&gt; N4((v2))
+    end
+    DeepWalk --&gt; SG[Skip-gram Training]
+    SG --&gt; Emb[Node Embeddings]</code></pre>
+<p><strong>Algorithm (simplified):</strong>
+1. Perform multiple random walks per node.
+2. Train Skip-gram on sequences of visited nodes.
+3. Output low-dimensional node embeddings.</p>
+<hr />
+<h2 id="node2vec">Node2Vec<a class="headerlink" href="#node2vec" title="Permanent link">&para;</a></h2>
+<p>Node2Vec extends DeepWalk with a flexible <strong>biased random walk strategy</strong>:
+- Parameters:
+  - <span class="arithmatex">\(p\)</span>: return parameter (exploration vs revisiting)
+  - <span class="arithmatex">\(q\)</span>: in-out parameter (BFS vs DFS bias)</p>
+<ul>
+<li>If <span class="arithmatex">\(p &gt; 1 &gt; q\)</span>: encourages <strong>global exploration</strong>.</li>
+<li>If <span class="arithmatex">\(p &lt; 1 &lt; q\)</span>: encourages <strong>local exploration</strong>.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    U((u)) --&gt;|BFS| S1((s1))
+    U --&gt;|BFS| S2((s2))
+    U --&gt;|DFS| S3((s3))
+    U --&gt;|DFS| S4((s4))</code></pre>
+<hr />
+<h2 id="node2vec-community-vs-structural-roles">Node2Vec Community vs Structural Roles<a class="headerlink" href="#node2vec-community-vs-structural-roles" title="Permanent link">&para;</a></h2>
+<ul>
+<li>By tuning <span class="arithmatex">\(p, q\)</span>, Node2Vec can:</li>
+<li>Capture <strong>community structure</strong> (nodes in the same cluster).</li>
+<li>Capture <strong>structural equivalence</strong> (nodes with similar roles, even in different communities).</li>
+</ul>
+<pre class="mermaid"><code>flowchart TB
+    subgraph Community Structure
+      A1((Node A)) --- A2((Node B)) --- A3((Node C))
+      A2 --- A4((Node D))
+    end
+    subgraph Structural Equivalence
+      B1((Hub 1)) --- X((Peripheral))
+      B2((Hub 2)) --- X
+    end</code></pre>
+<hr />
+<h1 id="image-representations">Image Representations<a class="headerlink" href="#image-representations" title="Permanent link">&para;</a></h1>
+<h2 id="contrastive-learning">Contrastive Learning<a class="headerlink" href="#contrastive-learning" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Goal: learn an embedding space where <strong>similar pairs are close</strong> and <strong>dissimilar pairs are far apart</strong>.</li>
+<li>Given anchor <span class="arithmatex">\(x\)</span>, positive <span class="arithmatex">\(x^+\)</span>, and negative <span class="arithmatex">\(x^-\)</span>:</li>
+</ul>
+<p><strong>Contrastive Loss:</strong>
+ <span class="arithmatex">\(\lVert x - x^+ \rVert^2 + \max(0, m - \lVert x - x^- \rVert^2)\)</span></p>
+<p><strong>Triplet Loss:</strong>
+<span class="arithmatex">\(\max(0, \lVert x - x^+ \rVert^2 - \lVert x - x^- \rVert^2 + m)\)</span></p>
+<pre class="mermaid"><code>flowchart LR
+    A[Anchor x] --&gt; P[Positive x⁺]
+    A --&gt; N[Negative x⁻]
+    P --&gt;|close in embedding| Z[Embedding Space]
+    N --&gt;|far apart| Z</code></pre>
+<hr />
+<h2 id="simclr-simple-framework-for-contrastive-learning-of-representations">SimCLR (Simple Framework for Contrastive Learning of Representations)<a class="headerlink" href="#simclr-simple-framework-for-contrastive-learning-of-representations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Framework for <strong>self-supervised learning (SSL)</strong> with contrastive loss.</li>
+<li>Given <span class="arithmatex">\(n\)</span> images, generate <span class="arithmatex">\(2n\)</span> augmented samples.</li>
+<li>For each positive pair, there are <span class="arithmatex">\(2(n-1)\)</span> negative pairs.</li>
+</ul>
+<p><strong>NT-Xent (Normalized Temperature-scaled Cross Entropy) Loss:</strong>
+<span class="arithmatex">\(<span class="arithmatex">\(\mathcal{L}_{i,j} = - \log \frac{\exp(\text{sim}(z_i, z_j)/\tau)}{\sum_{k=1}^{2n} 1_{[k \neq i]} \exp(\text{sim}(z_i, z_k)/\tau)}\)</span>\)</span></p>
+<ul>
+<li>Key idea: maximize agreement between positive pairs.</li>
+<li>Uses strong <strong>data augmentations</strong> (cropping, flipping, color distortion, Gaussian blur, etc.).</li>
+</ul>
+<pre class="mermaid"><code>flowchart TB
+    X["Input Image"] --&gt; Aug1["Augmentation t"]
+    X --&gt; Aug2["Augmentation t'"]
+    Aug1 --&gt; F1["Encoder f(·)"] --&gt; H1["Projection Head h(·)"] --&gt; Z1["Embedding z_i"]
+    Aug2 --&gt; F2["Encoder f(·)"] --&gt; H2["Projection Head h(·)"] --&gt; Z2["Embedding z_j"]
+    Z1 --&gt; Loss["Contrastive Loss"]
+    Z2 --&gt; Loss
+</code></pre>
+<p><strong>Impact:</strong>
+- Achieved <strong>state-of-the-art in SSL</strong>, surpassing supervised ResNet-50 on ImageNet Top-1 accuracy.</p>
+<hr />
+<h1 id="summary-of-advanced-topics">Summary of Advanced Topics<a class="headerlink" href="#summary-of-advanced-topics" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>ELMo</strong>: Contextual embeddings using BiLSTM.</li>
+<li><strong>BERT</strong>: Transformer-based contextual embeddings with MLM and NSP.</li>
+<li><strong>Graph embeddings</strong>: Learn node/edge/subgraph representations preserving structure.</li>
+<li><strong>DeepWalk</strong>: Uses random walks + Skip-gram.</li>
+<li><strong>Node2Vec</strong>: Extends DeepWalk with biased random walks for better control of context.</li>
+<li><strong>Contrastive Learning &amp; SimCLR</strong>: Powerful SSL methods for images, learning embeddings without labels.</li>
+</ul>
+<p>These advances form the foundation of <strong>modern NLP, graph, and image representation learning</strong>.</p>
 
 
 
@@ -1283,7 +1742,7 @@ flowchart TB
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 17, 2025 07:58:26 UTC">August 17, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 17, 2025 08:26:17 UTC">August 17, 2025</span>
   </span>
 
     
