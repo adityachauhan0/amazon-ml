@@ -1353,6 +1353,558 @@ W^* = \arg\max_W\; p(X \mid W)\, p(W),
 </li>
 </ul>
 <hr />
+<div class="admonition abstract">
+<p class="admonition-title">TL;DR</p>
+<p><strong>Goal.</strong> Move from recurrent <strong>sequence‑to‑sequence</strong> models to <strong>attention</strong> and finally to <strong>Transformers</strong>.</p>
+<p><strong>Key ideas.</strong>
+- Seq2Seq = Encoder–Decoder + <em>teacher forcing</em> during training.
+- <strong>Attention</strong> learns <em>alignment scores</em> to build a <strong>context vector</strong> from all encoder states.
+- <strong>Bahdanau (additive)</strong> vs <strong>Luong (multiplicative)</strong> attention differ in the scoring function.
+- RNNs suffer from <strong>long interaction distance</strong> and <strong>poor parallelism</strong>.
+- <strong>Transformer</strong> replaces recurrence with <strong>self‑attention</strong> + <strong>positional encoding</strong> and parallelizable blocks.</p>
+</div>
+<hr />
+<h2 id="1-sequencetosequence-seq2seq">1) Sequence‑to‑Sequence (Seq2Seq)<a class="headerlink" href="#1-sequencetosequence-seq2seq" title="Permanent link">&para;</a></h2>
+<p><strong>Architecture.</strong> An <strong>encoder RNN</strong> consumes the source sequence and produces hidden states {h₁,…,h_T}. A <strong>decoder RNN</strong> generates the target tokens step by step.</p>
+<div class="admonition info">
+<p class="admonition-title">Teacher Forcing</p>
+<p>During training, the decoder receives the ground‑truth token y_{t−1} as input at step t instead of its own previous prediction ŷ_{t−1}. This stabilizes and accelerates learning but creates <strong>exposure bias</strong> at inference.</p>
+</div>
+<p><strong>Autoregressive decoding.</strong><br />
+<span class="arithmatex">\(p(\mathbf{y}|\mathbf{x})=\prod_{t=1}^{U} p\big(y_t\mid y_{&lt;t},\mathbf{x}\big)\)</span> (cross‑entropy loss).</p>
+<pre class="mermaid"><code>flowchart LR
+    subgraph ENC[Encoder RNN]
+      x1((x1))--&gt;h1[h1]; h1--&gt;h2[h2]; h2--&gt;h3[h3]; h3--&gt;hT[hT]
+    end
+    subgraph DEC[Decoder RNN]
+      y0((&lt;Start&gt;))--&gt;s1[s1]; s1--&gt;s2[s2]; s2--&gt;s3[s3]; s3--&gt;sU[sU]
+    end
+    hT-- context --&gt;s1
+    s1--&gt;y1((y1)); s2--&gt;y2((y2)); s3--&gt;y3((y3))</code></pre>
+<blockquote>
+<p>Slide example: <strong>“I speak French” → “Je parle français”</strong>.</p>
+</blockquote>
+<hr />
+<h2 id="2-why-attention">2) Why Attention?<a class="headerlink" href="#2-why-attention" title="Permanent link">&para;</a></h2>
+<div class="admonition failure">
+<p class="admonition-title">Issues with recurrent models</p>
+<p><strong>Linear interaction distance.</strong> Dependencies must flow left→right (or right→left), making long‑range reference hard to capture (e.g., pronoun ↔ antecedent across many tokens).</p>
+<p><strong>Lack of parallelizability.</strong> The time dimension is inherently serial: step <em>t</em> waits for <em>t−1</em>.</p>
+</div>
+<p><strong>Core idea.</strong> Compute a <em>context</em> for each decoding step as a <strong>weighted sum</strong> of all encoder states, with weights indicating relevance to the current decoder state.</p>
+<div class="arithmatex">\[
+\mathbf{c}_t = \sum_{i=1}^{T} \alpha_{t,i}\,\mathbf{h}_i, \qquad \alpha_{t,i} = \operatorname{softmax}_i\big( e(\mathbf{s}_{t-1},\mathbf{h}_i) \big)
+\]</div>
+<pre class="mermaid"><code>sequenceDiagram
+    autonumber
+    participant Enc as Encoder states h1..hT
+    participant Dec as Decoder state s(t-1)
+    participant Att as Attention
+    Enc-&gt;&gt;Att: all hidden states
+    Dec-&gt;&gt;Att: query s(t-1)
+    Att--&gt;&gt;Dec: context c_t = Σ α_{t,i} h_i
+    Dec--&gt;&gt;Dec: produce y_t</code></pre>
+<hr />
+<h2 id="3-bahdanau-additive-attention">3) Bahdanau (Additive) Attention<a class="headerlink" href="#3-bahdanau-additive-attention" title="Permanent link">&para;</a></h2>
+<p><strong>Scoring (additive MLP).</strong></p>
+<div class="arithmatex">\[
+ e_{t,i} = \mathbf{v}_a^{\top} \tanh\!\big( \mathbf{W}_s\,\mathbf{s}_{t-1} + \mathbf{W}_h\,\mathbf{h}_i \big),\quad
+ \alpha_{t,i} = \operatorname{softmax}_i(e_{t,i}),\quad
+ \mathbf{c}_t = \sum_i \alpha_{t,i}\,\mathbf{h}_i.
+\]</div>
+<p>The decoder then consumes <span class="arithmatex">\([\mathbf{s}_{t-1};\mathbf{c}_t]\)</span> to produce <span class="arithmatex">\(\mathbf{s}_t\)</span> and output <span class="arithmatex">\(y_t\)</span>.</p>
+<div class="admonition example">
+<p class="admonition-title">When additive helps</p>
+<p>Useful when query/key dimensions differ or when an extra learned nonlinearity improves alignment.</p>
+</div>
+<hr />
+<h2 id="4-luong-multiplicative-attention">4) Luong (Multiplicative) Attention<a class="headerlink" href="#4-luong-multiplicative-attention" title="Permanent link">&para;</a></h2>
+<p>Let <span class="arithmatex">\(\mathbf{s}_t\)</span> be the decoder state and <span class="arithmatex">\(\mathbf{h}_i\)</span> an encoder state. Three <strong>alignment scoring functions</strong> from the slide:</p>
+<ul>
+<li><strong>Dot:</strong> <span class="arithmatex">\(\;\text{score}(\mathbf{s}_t,\mathbf{h}_i) = \mathbf{s}_t^{\top}\mathbf{h}_i\)</span></li>
+<li><strong>General:</strong> <span class="arithmatex">\(\;\text{score}(\mathbf{s}_t,\mathbf{h}_i) = \mathbf{s}_t^{\top}\mathbf{W}\,\mathbf{h}_i\)</span></li>
+<li><strong>Concat:</strong> <span class="arithmatex">\(\;\text{score}(\mathbf{s}_t,\mathbf{h}_i) = \mathbf{v}^{\top}\tanh\!\big(\mathbf{W}[\mathbf{s}_t;\mathbf{h}_i]\big)\)</span></li>
+</ul>
+<p>Then <span class="arithmatex">\(\alpha_{t,i}=\operatorname{softmax}_i(\text{score})\)</span> and <span class="arithmatex">\(\mathbf{c}_t = \sum_i \alpha_{t,i}\,\mathbf{h}_i\)</span>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Bahdanau vs. Luong</p>
+<p>Additive ≈ small MLP; flexible but slightly slower.<br />
+Multiplicative ≈ dot‑products; <strong>fast</strong>, especially when state sizes match.</p>
+</div>
+<hr />
+<h2 id="5-from-rnnattention-to-the-transformer">5) From RNN+Attention to the Transformer<a class="headerlink" href="#5-from-rnnattention-to-the-transformer" title="Permanent link">&para;</a></h2>
+<p>Even with attention, RNNs decode sequentially. <strong>Transformers</strong> remove recurrence and apply <strong>self‑attention</strong> in parallel.</p>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Transformer
+      direction LR
+      PE[Positional Encoding]--&gt;E[Embedding]
+      E--&gt;EncBlock1[Encoder Block × N]
+      EncBlock1--&gt;EncBlockN
+      EncBlockN-- cross-attn --&gt;DecBlock1[Decoder Block × N]
+      DecBlock1--&gt;DecBlockN
+      DecBlockN--&gt;LM[Linear + Softmax]
+    end</code></pre>
+<p><strong>Encoder block (per layer).</strong>
+1. Multi‑Head <strong>Self‑Attention</strong> on input X  → Add &amp; LayerNorm<br />
+2. <strong>Feed‑Forward</strong> (two linear layers with activation) → Add &amp; LayerNorm</p>
+<p><strong>Decoder block</strong> adds <strong>Masked Self‑Attention</strong> before <strong>Encoder–Decoder Attention</strong> to prevent peeking ahead.</p>
+<hr />
+<h2 id="6-selfattention-mechanics">6) Self‑Attention Mechanics<a class="headerlink" href="#6-selfattention-mechanics" title="Permanent link">&para;</a></h2>
+<p>Given input matrix <span class="arithmatex">\(X\in\mathbb{R}^{T\times d_{model}}\)</span>:</p>
+<div class="arithmatex">\[
+Q = X\,W^Q,\quad K = X\,W^K,\quad V = X\,W^V,\qquad
+\operatorname{Attention}(Q,K,V) = \operatorname{softmax}\!\left( \frac{QK^{\top}}{\sqrt{d_k}} \right) V.
+\]</div>
+<p><strong>Multi‑Head.</strong> Split into <span class="arithmatex">\(h\)</span> heads and concatenate results:<br />
+<span class="arithmatex">\(\operatorname{MHA}(X)=\operatorname{Concat}(\text{head}_1,\ldots,\text{head}_h)W^O\)</span>.</p>
+<p><strong>Positional encoding.</strong> (sinusoidal)</p>
+<div class="arithmatex">\[
+\mathrm{PE}_{(pos,2i)}=\sin\!\left(\frac{pos}{10000^{2i/d_{model}}}\right),\quad
+\mathrm{PE}_{(pos,2i+1)}=\cos\!\left(\frac{pos}{10000^{2i/d_{model}}}\right).
+\]</div>
+<p><strong>Masks.</strong> Decoder uses a <em>causal</em> mask so position t cannot attend to &gt; t.</p>
+<hr />
+<h2 id="7-tabs-alignment-context-output">7) Tabs: Alignment → Context → Output<a class="headerlink" href="#7-tabs-alignment-context-output" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Additive (Bahdanau)</label><label for="__tabbed_1_2">Multiplicative (Luong)</label><label for="__tabbed_1_3">Decoder step</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+e_{t,i} = \mathbf{v}_a^{\top}\tanh(\mathbf{W}_s\mathbf{s}_{t-1}+\mathbf{W}_h\mathbf{h}_i),\qquad
+\alpha_{t,i}=\operatorname{softmax}_i(e_{t,i}).
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\alpha_{t,i}=\operatorname{softmax}_i\big(\mathbf{s}_t^{\top}\mathbf{W}\,\mathbf{h}_i\big),\qquad
+\mathbf{c}_t=\sum_i\alpha_{t,i}\,\mathbf{h}_i.
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\tilde{\mathbf{s}}_t=\tanh(\mathbf{W}_c[\mathbf{c}_t;\mathbf{s}_t]),\quad
+p(y_t\mid\cdot)=\operatorname{softmax}(\mathbf{W}_o\tilde{\mathbf{s}}_t).
+\]</div>
+</div>
+</div>
+</div>
+<hr />
+<h2 id="8-mermaid-visuals">8) Mermaid Visuals<a class="headerlink" href="#8-mermaid-visuals" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+  E1["h1"]
+  E2["h2"]
+  E3["h3"]
+  E4["hT"]
+  S0["decoder s(t-1)"]
+  ATT((Attention))
+  S1["s_t"]
+  Y["y_t"]
+
+  E1 --&gt; E2 --&gt; E3 --&gt; E4
+  S0 --|query|--&gt; ATT
+  E1 --|key/value|--&gt; ATT
+  E2 --|key/value|--&gt; ATT
+  E3 --|key/value|--&gt; ATT
+  E4 --|key/value|--&gt; ATT
+  ATT --|context c_t|--&gt; S1 --&gt; Y
+</code></pre>
+<pre class="mermaid"><code>flowchart LR
+  subgraph EncoderBlock
+    X[Input X]--&gt;MHA[Multi-Head Self-Attn]
+    MHA--&gt;Add1[+ Residual]--&gt;LN1[LayerNorm]
+    LN1--&gt;FFN[Feed-Forward]
+    FFN--&gt;Add2[+ Residual]--&gt;LN2[LayerNorm]
+  end</code></pre>
+<hr />
+<h2 id="9-practical-notes">9) Practical Notes<a class="headerlink" href="#9-practical-notes" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Training</p>
+<ul>
+<li><strong>Teacher forcing</strong> with scheduled sampling can mitigate exposure bias.</li>
+<li><strong>Label smoothing</strong> (e.g., <span class="arithmatex">\(\epsilon=0.1\)</span>) improves generalization for Transformers.</li>
+</ul>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Scaling</p>
+<ul>
+<li>Choose head sizes so <span class="arithmatex">\(d_k=d_v=\tfrac{d_{model}}{h}\)</span>.</li>
+<li>Use warmup LR schedules: <span class="arithmatex">\(\text{lr} \propto d_{model}^{-0.5}\min(t^{-0.5}, t\,\text{warmup}^{-1.5})\)</span>.</li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Pitfalls</p>
+<ul>
+<li>Mismatched query/key dimensions.</li>
+<li>Forgetting causal masks in the decoder (information leakage).</li>
+</ul>
+</div>
+<hr />
+<h2 id="10-keywords-no-term-left-behind">10) Keywords (no term left behind)<a class="headerlink" href="#10-keywords-no-term-left-behind" title="Permanent link">&para;</a></h2>
+<p><code>seq2seq, encoder, decoder, teacher forcing, context vector, attention weights, alignment scores, Bahdanau attention, additive attention, Luong attention, multiplicative attention, dot score, general score, concat score, exposure bias, RNN bottleneck, linear interaction distance, parallelizability, self-attention, multi-head attention, queries, keys, values, scaled dot-product, positional encoding, causal mask, encoder–decoder attention, feed-forward network, residual connection, layer normalization, cross-entropy, beam search</code></p>
+<hr />
+<h2 id="11-references-attributions">11) References &amp; Attributions<a class="headerlink" href="#11-references-attributions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Diagrams inspired by: <em>Attention Mechanism</em> (FloydHub blog).  </li>
+<li>Transformer visuals inspired by: <em>The Illustrated Transformer</em> by Jay Alammar.</li>
+</ul>
+<hr />
+<h2 id="appendix-alignment-scoring-from-slides">Appendix — Alignment Scoring (from slides)<a class="headerlink" href="#appendix-alignment-scoring-from-slides" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Dot:</strong> <span class="arithmatex">\(\;\text{score}=\mathbf{H}_{enc}^{\top}\mathbf{H}_{dec}\)</span></li>
+<li><strong>General:</strong> <span class="arithmatex">\(\;\text{score}=\mathbf{H}_{dec}^{\top}\mathbf{W}\,\mathbf{H}_{enc}\)</span></li>
+<li><strong>Concat:</strong> <span class="arithmatex">\(\;\text{score}=\mathbf{v}^{\top}\tanh\big(\mathbf{W}\,[\mathbf{H}_{enc};\mathbf{H}_{dec}]\big)\)</span></li>
+</ul>
+<blockquote>
+<p>These match the “Alignment Scoring functions in Luong Attention” slide.</p>
+</blockquote>
+<hr />
+<p>title: "Sequential Learning — Part 3: Transformer Self-Attention Deep Dive"
+description: "Extended MkDocs-ready notes on Transformer internals: self-attention analogy, step-by-step derivations, worked numerical examples, multi-head attention, positional encodings, residual connections, encoder-decoder structure, and subword modeling."
+tags: [transformer, self-attention, multi-head, positional-encoding, residual, subword, nlp, deep-learning]
+date: 2025-08-24</p>
+<hr />
+<div class="admonition abstract">
+<p class="admonition-title">TL;DR</p>
+<p><strong>Topic:</strong> Deep dive into <strong>Transformer self-attention</strong> and architectural innovations.</p>
+<p><strong>Big ideas:</strong>
+- Self-attention ≈ database retrieval with <strong>Query–Key–Value</strong>.
+- Softmax scaling ensures stable gradients.
+- <strong>Multi-head attention</strong> provides multiple perspectives.
+- <strong>Positional encodings</strong> inject sequence order.
+- <strong>Residual + LayerNorm</strong> enable deep stacking.
+- <strong>Subword modeling</strong> allows open-vocabulary handling.</p>
+<p><strong>Applications:</strong> Machine translation, summarization, dialogue, protein folding, code generation.</p>
+</div>
+<hr />
+<h2 id="1-self-attention-as-database-lookup">1. Self-Attention as Database Lookup<a class="headerlink" href="#1-self-attention-as-database-lookup" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Analogy:</strong></li>
+<li>Query = question asked of the database.</li>
+<li>Keys = index entries.</li>
+<li>Values = stored records.</li>
+<li>The system retrieves values based on similarity between Query and Keys.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    Q[Query Vector] --&gt; DB[(Keys + Values)] --&gt; V[Retrieved Value]</code></pre>
+<div class="admonition note">
+<p class="admonition-title">Slide analogy</p>
+<ul>
+<li>Query Q1 → Database index → Key–Value pairs → Answer.</li>
+<li>Each token embedding simultaneously plays all three roles (Q, K, V).</li>
+</ul>
+</div>
+<hr />
+<h2 id="2-mathematical-self-attention">2. Mathematical Self-Attention<a class="headerlink" href="#2-mathematical-self-attention" title="Permanent link">&para;</a></h2>
+<p>Given input embeddings <span class="arithmatex">\(X \in \mathbb{R}^{T \times d_{model}}\)</span>:</p>
+<div class="arithmatex">\[
+Q = XW^Q, \quad K = XW^K, \quad V = XW^V
+\]</div>
+<p>where <span class="arithmatex">\(W^Q, W^K, W^V\)</span> are learned parameter matrices.</p>
+<p><strong>Scaled Dot-Product Attention:</strong></p>
+<div class="arithmatex">\[
+\text{Attention}(Q,K,V) = \text{softmax}\left( \frac{QK^T}{\sqrt{d_k}} \right) V
+\]</div>
+<h3 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Dot product</strong> of queries with keys: relevance score.</li>
+<li><strong>Scaling</strong> by <span class="arithmatex">\(\sqrt{d_k}\)</span> prevents extreme values and vanishing gradients.</li>
+<li><strong>Softmax</strong> converts scores → probabilities <span class="arithmatex">\(\alpha_{t,i}\)</span>.</li>
+<li><strong>Weighted sum</strong> of values: contextualized embedding for each position.</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Numerical stability</p>
+<p>Without scaling, large <span class="arithmatex">\(d_k\)</span> → extremely large dot products → softmax saturates.</p>
+</div>
+<hr />
+<h2 id="3-worked-example-numerical">3. Worked Example (Numerical)<a class="headerlink" href="#3-worked-example-numerical" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Suppose <span class="arithmatex">\(q_1 \cdot k_1 = 112\)</span>, <span class="arithmatex">\(q_1 \cdot k_2 = 96\)</span>.</li>
+<li>Scale by <span class="arithmatex">\(\sqrt{d_k} = 8\)</span>: <span class="arithmatex">\(14, 12\)</span>.</li>
+<li>Softmax → weights <span class="arithmatex">\([0.88, 0.12]\)</span>.</li>
+<li>Weighted sum → <span class="arithmatex">\(0.88 v_1 + 0.12 v_2\)</span>.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    q1["Query q1"] --&gt;|dot| k1
+    q1 --&gt;|dot| k2
+
+    k1 --&gt; Score["Raw Scores"]
+    k2 --&gt; Score
+
+    Score --&gt; Scale["Divide by sqrt(d_k)"]
+    Scale --&gt; Softmax["Softmax"]
+    Softmax --&gt; Weights["Attention Weights"]
+
+    Weights --&gt; Sum["Weighted Values → Context Vector"]
+</code></pre>
+<div class="admonition example">
+<p class="admonition-title">Interpretation</p>
+<p>Token <em>Thinking</em> attends 88% to itself, 12% to <em>Machines</em>.</p>
+</div>
+<hr />
+<h2 id="4-multi-head-attention">4. Multi-Head Attention<a class="headerlink" href="#4-multi-head-attention" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Instead of one Q–K–V projection, we use <strong>h heads</strong>.</li>
+<li>Each head projects into <span class="arithmatex">\(d_k = d_{model}/h\)</span>.</li>
+<li>Results concatenated → projected via <span class="arithmatex">\(W^O\)</span>.</li>
+</ul>
+<p><span class="arithmatex">\(<span class="arithmatex">\(\text{MHA}(X) = \text{Concat}(\text{head}_1, ..., \text{head}_h) W^O\)</span>\)</span>
+<strong>Advantages:</strong>
+- Captures multiple types of relationships (syntax, semantics, long vs short range).
+- Prevents overfitting to a single attention pattern.</p>
+<pre class="mermaid"><code>flowchart TB
+    X[Input Embedding] --&gt; Proj1[W^Q0, W^K0, W^V0] --&gt; Head0[Head 0]
+    X --&gt; Proj2[W^Q1, W^K1, W^V1] --&gt; Head1[Head 1]
+    Head0 &amp; Head1 --&gt; Concat[Concatenate Heads]
+    Concat --&gt; WO[Linear W^O]</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Scaling</p>
+<p>In the original Transformer, <span class="arithmatex">\(d_{model}=512\)</span>, <span class="arithmatex">\(h=8\)</span>, so <span class="arithmatex">\(d_k=64\)</span>.</p>
+</div>
+<hr />
+<h2 id="5-positional-encoding">5. Positional Encoding<a class="headerlink" href="#5-positional-encoding" title="Permanent link">&para;</a></h2>
+<div class="admonition info">
+<p class="admonition-title">Why needed?</p>
+<p>Self-attention itself is <strong>order-invariant</strong>. Without positional info, sentences like <em>“dog bites man”</em> vs <em>“man bites dog”</em> look identical.</p>
+</div>
+<p><strong>Sinusoidal Encoding:</strong></p>
+<div class="arithmatex">\[
+PE_{(pos,2i)} = \sin\left( \frac{pos}{10000^{2i/d_{model}}} \right), \quad
+PE_{(pos,2i+1)} = \cos\left( \frac{pos}{10000^{2i/d_{model}}} \right)
+\]</div>
+<ul>
+<li>Allows extrapolation to unseen sequence lengths.</li>
+<li>Captures relative distances via sinusoidal patterns.</li>
+</ul>
+<pre class="mermaid"><code>graph LR
+  Emb["Word Embedding"] --&gt; Sum["Final Input Embedding"]
+  PE["Positional Encoding"] --&gt; Sum
+</code></pre>
+<hr />
+<h2 id="6-residual-connections-layer-normalization">6. Residual Connections &amp; Layer Normalization<a class="headerlink" href="#6-residual-connections-layer-normalization" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Residual connections</strong>: <span class="arithmatex">\(\text{Output} = f(x) + x\)</span>.</li>
+<li><strong>LayerNorm</strong>: normalize across features for stability.</li>
+</ul>
+<pre class="mermaid"><code>graph TB
+  X[Input] --&gt; SA[Self-Attention]
+  SA --&gt; Add[Add Residual]
+  Add --&gt; LN[LayerNorm]</code></pre>
+<div class="admonition success">
+<p class="admonition-title">Effect</p>
+<ul>
+<li>Enables training very deep networks.</li>
+<li>Helps gradients flow back through many layers.</li>
+</ul>
+</div>
+<hr />
+<h2 id="7-encoder-decoder-structure">7. Encoder &amp; Decoder Structure<a class="headerlink" href="#7-encoder-decoder-structure" title="Permanent link">&para;</a></h2>
+<p><strong>Encoder Layer:</strong>
+1. Self-Attention → Add + Norm.
+2. Feed-Forward Network → Add + Norm.</p>
+<p><strong>Decoder Layer:</strong>
+1. Masked Self-Attention (prevents looking ahead).
+2. Encoder–Decoder Attention (queries = decoder states, keys/values = encoder outputs).
+3. Feed-Forward Network.</p>
+<pre class="mermaid"><code>flowchart TB
+    EncInput[Encoder Embeddings] --&gt; SA[Self-Attn]
+    SA --&gt; Add1[Add+Norm] --&gt; FF[Feed Forward]
+    FF --&gt; Add2[Add+Norm]
+
+    DecInput[Target Embeddings] --&gt; MaskSA[Masked Self-Attn]
+    MaskSA --&gt; Add3[Add+Norm] --&gt; EncDec[Encoder-Decoder Attention]
+    EncDec --&gt; Add4[Add+Norm] --&gt; DecFF[Feed Forward]
+    DecFF --&gt; Add5[Add+Norm]</code></pre>
+<div class="admonition note">
+<p class="admonition-title">Causal Masking</p>
+<p>Ensures autoregressive decoding — prediction of token t cannot access future tokens.</p>
+</div>
+<hr />
+<h2 id="8-subword-modeling">8. Subword Modeling<a class="headerlink" href="#8-subword-modeling" title="Permanent link">&para;</a></h2>
+<p>Traditional assumptions:
+- Fixed vocabulary.
+- OOV (out-of-vocabulary) tokens mapped to <code>&lt;UNK&gt;</code>.</p>
+<p><strong>Challenges:</strong>
+- Morphologically rich languages → huge vocab.
+- Rare words → inefficient training.</p>
+<p><strong>Subword methods:</strong>
+- Break words into frequent <strong>subword units</strong>.
+- Preserve readability and coverage.</p>
+<p>Example:</p>
+<blockquote>
+<p><em>“unfortunately”</em> → <code>un + for + tun + ate + ly</code></p>
+</blockquote>
+<div class="admonition tip">
+<p class="admonition-title">Popular techniques</p>
+<ul>
+<li>Byte Pair Encoding (BPE)</li>
+<li>WordPiece (used in BERT)</li>
+<li>SentencePiece (used in T5, GPT‑2 training data)</li>
+</ul>
+</div>
+<hr />
+<h2 id="9-advanced-notes-variants">9. Advanced Notes &amp; Variants<a class="headerlink" href="#9-advanced-notes-variants" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Relative Positional Encoding:</strong> Improves generalization to long sequences.</li>
+<li><strong>Rotary Embeddings (RoPE):</strong> Used in GPT‑NeoX, LLaMA.</li>
+<li><strong>FlashAttention:</strong> Optimized implementation reducing memory overhead.</li>
+<li><strong>ALiBi (Attention with Linear Biases):</strong> Improves extrapolation to longer contexts.</li>
+</ul>
+<hr />
+<h2 id="10-keywords">10. Keywords<a class="headerlink" href="#10-keywords" title="Permanent link">&para;</a></h2>
+<p><code>Self-attention, Query, Key, Value, Attention Weights, Softmax, Contextual Representation, Multi-Head Attention, Positional Encoding, Residual Connection, Layer Normalization, Encoder-Decoder Attention, Masked Attention, Subword Modeling, Byte Pair Encoding, WordPiece, SentencePiece, Relative Position, Rotary Embeddings, FlashAttention, ALiBi</code></p>
+<hr />
+<h2 id="11-references">11. References<a class="headerlink" href="#11-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Vaswani et al. (2017), <em>Attention Is All You Need</em>  </li>
+<li>Jay Alammar, <em>The Illustrated Transformer</em>  </li>
+<li>Press et al. (2021), <em>Train Short, Test Long: Attention with Linear Biases</em>  </li>
+<li>Dao et al. (2022), <em>FlashAttention: Fast and Memory-Efficient Exact Attention</em>  </li>
+</ul>
+<hr />
+<div class="admonition abstract">
+<p class="admonition-title">TL;DR</p>
+<p><strong>Topic:</strong> Pretraining language models with Transformers.</p>
+<p><strong>Key steps:</strong>
+- Tokenization: Subword modeling (BPE, WordPiece, SentencePiece).
+- Pretraining tasks: autoregressive LM (GPT), masked LM (BERT), span corruption (T5).
+- Fine-tuning: task-specific adaptation.
+- Results: Large pretrained models transfer effectively across many NLP tasks.</p>
+</div>
+<hr />
+<h2 id="1-subword-modeling">1. Subword Modeling<a class="headerlink" href="#1-subword-modeling" title="Permanent link">&para;</a></h2>
+<h3 id="11-byte-pair-encoding-bpe">1.1 Byte Pair Encoding (BPE)<a class="headerlink" href="#11-byte-pair-encoding-bpe" title="Permanent link">&para;</a></h3>
+<p>Algorithm (Sennrich et al. 2016; Wu et al. 2016):</p>
+<ol>
+<li><strong>Initialize vocabulary</strong> with all characters.</li>
+<li><strong>Tokenize words</strong> into characters + end-of-word symbol <code>&lt;/w&gt;</code>.</li>
+<li><strong>Count pairs</strong> of consecutive symbols across corpus.</li>
+<li><strong>Merge most frequent pair</strong> into new symbol.</li>
+<li>Repeat until reaching desired vocab size / merges.</li>
+</ol>
+<p>Example:
+- “unfortunately” → <code>un for tun ate ly</code></p>
+<div class="admonition note">
+<p class="admonition-title">Effect</p>
+<p>Reduces OOV, balances vocab size vs efficiency.</p>
+</div>
+<h3 id="12-other-subword-methods">1.2 Other Subword Methods<a class="headerlink" href="#12-other-subword-methods" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Unigram LM Tokenization</strong> (Kudo, 2018): probabilistic model chooses best segmentation.</li>
+<li><strong>WordPiece</strong>: merges based on likelihood rather than frequency (used in BERT).</li>
+<li><strong>SentencePiece</strong>: language-independent, treats input as raw stream.</li>
+</ul>
+<p>Reference: <a href="https://arxiv.org/pdf/1804.10959.pdf">https://arxiv.org/pdf/1804.10959.pdf</a></p>
+<hr />
+<h2 id="2-pretraining-through-language-modeling">2. Pretraining through Language Modeling<a class="headerlink" href="#2-pretraining-through-language-modeling" title="Permanent link">&para;</a></h2>
+<p><strong>Autoregressive LM objective:</strong></p>
+<div class="arithmatex">\[
+\max_\theta \sum_t \log p_\theta(w_t \mid w_{1:t-1})
+\]</div>
+<ul>
+<li>Model predicts next token given context.</li>
+<li>Decoder architectures (RNN, Transformer) are typical.</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    w1[w1] --&gt; Dec[Decoder]
+    w2[w2] --&gt; Dec
+    w3[w3] --&gt; Dec
+    Dec --&gt; wt[Predict next token]</code></pre>
+<hr />
+<h2 id="3-generative-pretrained-transformer-gpt">3. Generative Pretrained Transformer (GPT)<a class="headerlink" href="#3-generative-pretrained-transformer-gpt" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Architecture: <strong>Transformer Decoder-only</strong>.</li>
+<li>GPT-1: 12 layers, 768 hidden dim, 12 heads, 40k BPE vocab.</li>
+<li>Pretraining dataset: BookCorpus.</li>
+</ul>
+<p><strong>Training task:</strong> Language modeling (left-to-right).</p>
+<p>Example input format (translation):
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>[START] what is your name [DELIM] तुम्हारा नाम क्या है [EXTRACT]
+</span></code></pre></div></p>
+<h3 id="fine-tuning-gpt">Fine-tuning GPT<a class="headerlink" href="#fine-tuning-gpt" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add linear layer on final hidden state.</li>
+<li>Task-specific supervision.</li>
+<li>Works for classification, QA, etc.</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">GLUE tasks</p>
+<p>GPT achieved strong results on 6/8 GLUE benchmarks.</p>
+</div>
+<hr />
+<h2 id="4-bert-bidirectional-encoder-representations">4. BERT (Bidirectional Encoder Representations)<a class="headerlink" href="#4-bert-bidirectional-encoder-representations" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Architecture:</strong> Transformer Encoder-only.</li>
+<li>Uses <strong>WordPiece tokenizer</strong>.</li>
+<li><strong>Masked Language Model (MLM):</strong> randomly replace tokens with <code>[MASK]</code>, predict them.</li>
+<li><strong>Next Sentence Prediction (NSP):</strong> binary classification for sentence pairs.</li>
+</ul>
+<p>BERT-Base: 12 layers, 768-dim hidden, 12 heads.<br />
+BERT-Large: 24 layers, 1024-dim hidden, 16 heads.</p>
+<pre class="mermaid"><code>flowchart LR
+    I1[I went to the] --&gt; M[[MASK]]
+    I2[to the store] --&gt; E[Encoder]
+    E --&gt; Predict[Predict missing word]</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Bi-directionality</p>
+<p>Unlike GPT, BERT sees both left and right context simultaneously.</p>
+</div>
+<hr />
+<h2 id="5-t5-text-to-text-transfer-transformer">5. T5: Text-to-Text Transfer Transformer<a class="headerlink" href="#5-t5-text-to-text-transfer-transformer" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Idea:</strong> Frame every NLP task as text-to-text.</li>
+<li>Same model, same loss, same decoding.</li>
+</ul>
+<p>Examples:
+- Translation: <code>translate English to German: That is good.</code> → <code>Das ist gut.</code>
+- Classification: <code>cola sentence: The course is jumping well.</code> → <code>not acceptable</code>
+- QA: <code>When was Roosevelt born?</code> → <code>1882</code></p>
+<h3 id="pretraining-task-span-corruption">Pretraining Task: Span Corruption<a class="headerlink" href="#pretraining-task-span-corruption" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Mask random spans (not just tokens).</li>
+<li>Replace with <code>&lt;X&gt;</code> markers.</li>
+<li>Train model to reconstruct missing spans.</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Input: Thank you &lt;X&gt; me to your party &lt;Y&gt; week.
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Target: &lt;X&gt; for inviting &lt;Y&gt; last &lt;Z&gt;
+</span></code></pre></div>
+<hr />
+<h2 id="6-results-impact">6. Results &amp; Impact<a class="headerlink" href="#6-results-impact" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GPT: Improved over ELMo &amp; BiLSTMs.</li>
+<li>BERT: Huge boost across GLUE, SQuAD.</li>
+<li>T5: Unified pretraining + fine-tuning across many tasks.</li>
+</ul>
+<pre class="mermaid"><code>graph TB
+  GPT[GPT Pretraining] --&gt; FineTune[Task Fine-tuning]
+  BERT[BERT Pretraining] --&gt; FineTune
+  T5[T5 Pretraining] --&gt; FineTune</code></pre>
+<div class="admonition success">
+<p class="admonition-title">Lesson</p>
+<p>Pretraining + fine-tuning is the foundation of modern NLP.</p>
+</div>
+<hr />
+<h2 id="7-keywords">7. Keywords<a class="headerlink" href="#7-keywords" title="Permanent link">&para;</a></h2>
+<p><code>Byte Pair Encoding, BPE, WordPiece, SentencePiece, Unigram LM, Pretraining, Language Modeling, GPT, Decoder-only Transformer, BookCorpus, Fine-tuning, GLUE, BERT, Encoder-only Transformer, MLM, NSP, Bi-directional Context, T5, Text-to-Text, Span Corruption, Transfer Learning</code></p>
+<hr />
+<h2 id="8-references">8. References<a class="headerlink" href="#8-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Sennrich et al. (2016). <em>Neural Machine Translation of Rare Words with Subword Units.</em>  </li>
+<li>Wu et al. (2016). <em>Google’s Neural Machine Translation System.</em>  </li>
+<li>Radford et al. (2018). <em>Improving Language Understanding by Generative Pre-Training.</em>  </li>
+<li>Devlin et al. (2019). <em>BERT: Pre-training of Deep Bidirectional Transformers.</em>  </li>
+<li>Raffel et al. (2020). <em>Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer (T5).</em>  </li>
+</ul>
+<hr />
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:floydhub">
+<p>https://blog.floydhub.com/attention-mechanism/&#160;<a class="footnote-backref" href="#fnref:floydhub" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:alammar">
+<p>https://jalammar.github.io/illustrated-transformer/&#160;<a class="footnote-backref" href="#fnref:alammar" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 
@@ -1373,7 +1925,7 @@ W^* = \arg\max_W\; p(X \mid W)\, p(W),
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 24, 2025 03:56:26 UTC">August 24, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 24, 2025 04:27:17 UTC">August 24, 2025</span>
   </span>
 
     
