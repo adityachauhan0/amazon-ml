@@ -1,0 +1,1498 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="My ML notes, cheatsheets, and experiments">
+      
+      
+      
+        <link rel="canonical" href="https://adityachauhan0.github.io/amazon-ml/notes/lec5/">
+      
+      
+        <link rel="prev" href="../lecture4/">
+      
+      
+        <link rel="next" href="../../cheatsheets/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.17">
+    
+    
+      
+        <title>Sequential Learning - Machine Learning Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="pink">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sequential-learning-sequence-tagging-with-hidden-markov-models" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Machine Learning Notes" class="md-header__button md-logo" aria-label="Machine Learning Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Machine Learning Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Sequential Learning
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="pink"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="pink"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="pink"  aria-label="Switch to high contrast"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to high contrast" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20c-2.21 0-4.21-.9-5.66-2.34L17.66 6.34A8.01 8.01 0 0 1 20 12a8 8 0 0 1-8 8M6 8h2V6h1.5v2h2v1.5h-2v2H8v-2H6M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 14h5v-1.5h-5z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/adityachauhan0/amazon-ml" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    adityachauhan0/amazon-ml
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../lecture3/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Notes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../cheatsheets/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Cheatsheets
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Machine Learning Notes" class="md-nav__button md-logo" aria-label="Machine Learning Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Machine Learning Notes
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/adityachauhan0/amazon-ml" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    adityachauhan0/amazon-ml
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Notes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Notes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lecture3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dimensionality Reduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lecture4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Unsupervised Learning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Sequential Learning
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sequential Learning
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-parts-of-speech-pos-tagging" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Parts of Speech (POS) Tagging
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-problem-formulation-sentence-tagging" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Problem Formulation (Sentence Tagging)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-generative-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Generative Models
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-hidden-markov-models-hmms" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Hidden Markov Models (HMMs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Hidden Markov Models (HMMs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-graphical-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Graphical view
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-generative-story-toy-pos-tagger" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Generative story (toy POS tagger)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Notation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-likelihood-and-factorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 Likelihood and factorization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-inference-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.6 Inference tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-learning-brief" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.7 Learning (brief)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-worked-toy-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Worked toy example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-summary-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Summary &amp; Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Appendix: Quick reference
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cheatsheets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Cheatsheets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/adityachauhan0/amazon-ml/edit/main/docs/notes/lec5.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/adityachauhan0/amazon-ml/raw/main/docs/notes/lec5.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="sequential-learning-sequence-tagging-with-hidden-markov-models">Sequential Learning — Sequence Tagging with Hidden Markov Models<a class="headerlink" href="#sequential-learning-sequence-tagging-with-hidden-markov-models" title="Permanent link">&para;</a></h1>
+<div class="admonition info">
+<p class="admonition-title">About these notes</p>
+<p>These MkDocs‑ready notes were produced from your slide snapshots. They include Mermaid diagrams and LaTeX. We can expand or rearrange sections any time.</p>
+</div>
+<hr />
+<h2 id="1-parts-of-speech-pos-tagging">1. Parts of Speech (POS) Tagging<a class="headerlink" href="#1-parts-of-speech-pos-tagging" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> classify each token in a sentence into a syntactic category (e.g., noun, verb, adjective).</p>
+<ul>
+<li>Words are <strong>ambiguous</strong> and can take multiple POS tags depending on context.</li>
+<li>Example: the word <em>play</em></li>
+<li>As <strong>verb</strong>: “I like to <strong>play</strong> cricket.”</li>
+<li>As <strong>noun</strong>: “I would like to act in that <strong>play</strong>.”</li>
+<li>Disambiguation <strong>requires sequence context</strong>.</li>
+</ul>
+<hr />
+<h2 id="2-problem-formulation-sentence-tagging">2. Problem Formulation (Sentence Tagging)<a class="headerlink" href="#2-problem-formulation-sentence-tagging" title="Permanent link">&para;</a></h2>
+<p>Given an input token sequence <span class="arithmatex">\(x_{1:N} = (x_1, \ldots, x_N)\)</span>, predict a label sequence <span class="arithmatex">\(y_{1:N} = (y_1, \ldots, y_N)\)</span>.</p>
+<p>Two broad modeling paradigms:</p>
+<ul>
+<li><strong>Generative:</strong> model the joint <span class="arithmatex">\(p_\theta(x_{1:N}, y_{1:N})\)</span> and decode
+  <span class="arithmatex">\(<span class="arithmatex">\(\hat{y}_{1:N} = \arg\max_{y_{1:N}} p_\theta(x_{1:N}, y_{1:N}).\)</span>\)</span></li>
+<li><strong>Discriminative:</strong> model the conditional <span class="arithmatex">\(p_\phi(y_{1:N}\mid x_{1:N})\)</span> (or a direct structured predictor) and decode
+  <span class="arithmatex">\(<span class="arithmatex">\(\hat{y}_{1:N} = \arg\max_{y_{1:N}} p_\phi(y_{1:N}\mid x_{1:N}).\)</span>\)</span></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Choosing a paradigm</p>
+<p>Generative models (like HMMs) are simple, often data‑efficient, and interpretable; discriminative models (CRF, BiLSTM‑CRF, Transformers) can capture richer features.</p>
+</div>
+<hr />
+<h2 id="3-generative-models">3. Generative Models<a class="headerlink" href="#3-generative-models" title="Permanent link">&para;</a></h2>
+<p>Given training pairs <span class="arithmatex">\((x^{(k)}, y^{(k)})\)</span> for <span class="arithmatex">\(k = 1, \dots, K\)</span>, fit a probabilistic model for the <strong>joint</strong> <span class="arithmatex">\(p(X,Y)\)</span>. At inference, choose the label sequence maximizing the joint probability:</p>
+<div class="arithmatex">\[\hat{y} = \arg\max_{y} p(x, y).\]</div>
+<p>HMMs are the canonical generative model for sequence labeling.</p>
+<hr />
+<h2 id="4-hidden-markov-models-hmms">4. Hidden Markov Models (HMMs)<a class="headerlink" href="#4-hidden-markov-models-hmms" title="Permanent link">&para;</a></h2>
+<h3 id="41-graphical-view">4.1 Graphical view<a class="headerlink" href="#41-graphical-view" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Hidden_States
+      y1((y₁)) --&gt; y2((y₂)) --&gt; y3((y₃)) --&gt; y4((…))
+    end
+    x1([x₁]) --- y1
+    x2([x₂]) --- y2
+    x3([x₃]) --- y3
+    x4([x₄]) --- y4</code></pre>
+<ul>
+<li><strong>Hidden states</strong> <span class="arithmatex">\(y_t\)</span> are POS tags (e.g., <em>det, noun, verb</em>).</li>
+<li><strong>Observations</strong> <span class="arithmatex">\(x_t\)</span> are words (<em>the, dog, barks</em>).</li>
+<li>We assume:</li>
+<li><strong>Markov property:</strong> <span class="arithmatex">\(p(y_t\mid y_{1:t-1}) = p(y_t\mid y_{t-1})\)</span>.</li>
+<li><strong>Emission independence:</strong> <span class="arithmatex">\(p(x_t\mid x_{1:t-1}, y_{1:t}) = p(x_t\mid y_t)\)</span>.</li>
+</ul>
+<h3 id="42-generative-story-toy-pos-tagger">4.2 Generative story (toy POS tagger)<a class="headerlink" href="#42-generative-story-toy-pos-tagger" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    Start([Start]) --&gt; det((det))
+    Start --&gt; noun((noun))
+    Start --&gt; verb((verb))
+
+    det --&gt; det
+    det --&gt; noun
+    det --&gt; verb
+
+    noun --&gt; det
+    noun --&gt; noun
+    noun --&gt; verb
+
+    verb --&gt; det
+    verb --&gt; noun
+    verb --&gt; verb
+
+    det -.emit.-&gt; the(["the"]) 
+    noun -.emit.-&gt; dog(["dog"]) 
+    verb -.emit.-&gt; barks(["barks"]) 
+
+    classDef default fill:none,stroke-width:1px</code></pre>
+<h3 id="43-notation">4.3 Notation<a class="headerlink" href="#43-notation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Vocabulary <span class="arithmatex">\(\mathcal{V}\)</span>: set of all words.</li>
+<li>Tag set <span class="arithmatex">\(\mathcal{S}\)</span>: e.g., <span class="arithmatex">\(\{\text{det}, \text{noun}, \text{verb}, \dots\}\)</span>.</li>
+<li>Sentence <span class="arithmatex">\(X = x_{1:N}\)</span> with <span class="arithmatex">\(x_i \in \mathcal{V}\)</span>.</li>
+<li>Tag sequence <span class="arithmatex">\(Y = y_{1:N}\)</span> with <span class="arithmatex">\(y_i \in \mathcal{S}\)</span>.</li>
+</ul>
+<h3 id="44-parameters">4.4 Parameters<a class="headerlink" href="#44-parameters" title="Permanent link">&para;</a></h3>
+<p>HMM parameters <span class="arithmatex">\(\theta = (\boldsymbol{\pi}, \mathbf{A}, \mathbf{B})\)</span>:</p>
+<ul>
+<li><strong>Initial</strong> distribution <span class="arithmatex">\(\boldsymbol{\pi}\)</span> with <span class="arithmatex">\(\pi_{s} = p(y_1 = s)\)</span>.</li>
+<li><strong>Transition</strong> matrix <span class="arithmatex">\(\mathbf{A}\)</span> with <span class="arithmatex">\(a_{uv} = p(y_t = v \mid y_{t-1} = u)\)</span>.</li>
+<li><strong>Emission</strong> probabilities <span class="arithmatex">\(\mathbf{B}\)</span> with <span class="arithmatex">\(b_{s,w} = p(x_t = w \mid y_t = s)\)</span>.</li>
+</ul>
+<p>Example (toy numbers from slides):</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(\pi\)</span></th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>det</td>
+<td>0.50</td>
+</tr>
+<tr>
+<td>noun</td>
+<td>0.40</td>
+</tr>
+<tr>
+<td>verb</td>
+<td>0.10</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(\mathbf{A}\)</span></th>
+<th style="text-align: right;">det</th>
+<th style="text-align: right;">noun</th>
+<th style="text-align: right;">verb</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>det</strong></td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;"><strong>0.99</strong></td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr>
+<td><strong>noun</strong></td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;"><strong>0.40</strong></td>
+</tr>
+<tr>
+<td><strong>verb</strong></td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.20</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(\mathbf{B}\)</span></th>
+<th style="text-align: right;">the</th>
+<th style="text-align: right;">dog</th>
+<th style="text-align: right;">barks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>det</strong></td>
+<td style="text-align: right;"><strong>0.40</strong></td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr>
+<td><strong>noun</strong></td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.015</td>
+<td style="text-align: right;"><strong>0.0031</strong></td>
+</tr>
+<tr>
+<td><strong>verb</strong></td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0004</td>
+<td style="text-align: right;"><strong>0.020</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Examples: <span class="arithmatex">\(a_{\text{det},\text{noun}}=0.99\)</span>, <span class="arithmatex">\(a_{\text{noun},\text{verb}}=0.40\)</span>, <span class="arithmatex">\(b_{\text{det},\text{the}}=0.40\)</span>, <span class="arithmatex">\(b_{\text{noun},\text{barks}}=0.0031\)</span>.</p>
+</blockquote>
+<h3 id="45-likelihood-and-factorization">4.5 Likelihood and factorization<a class="headerlink" href="#45-likelihood-and-factorization" title="Permanent link">&para;</a></h3>
+<p>For a first‑order HMM,</p>
+<div class="arithmatex">\[
+p_\theta(x_{1:N}, y_{1:N})
+= p(y_1)\, p(x_1\mid y_1) \prod_{t=2}^N p(y_t\mid y_{t-1})\, p(x_t\mid y_t).
+\]</div>
+<p>The <strong>marginal likelihood</strong> over observations is</p>
+<div class="arithmatex">\[
+p_\theta(x_{1:N}) = \sum_{y_{1:N}} p_\theta(x_{1:N}, y_{1:N}).
+\]</div>
+<h3 id="46-inference-tasks">4.6 Inference tasks<a class="headerlink" href="#46-inference-tasks" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Decoding (Viterbi):</strong> <span class="arithmatex">\(\hat{y}_{1:N} = \arg\max_{y_{1:N}} p_\theta(y_{1:N}\mid x_{1:N})\)</span>.
+  Recurrence for the best path score <span class="arithmatex">\(\delta_t(s)\)</span> and backpointers <span class="arithmatex">\(\psi_t(s)\)</span>:
+  $$
+  \begin{aligned}
+  \delta_1(s) &amp;= \log \pi_s + \log b_{s,x_1},\
+  \delta_t(s) &amp;= \max_{u}\; \delta_{t-1}(u) + \log a_{u,s} + \log b_{s,x_t}. 
+  \end{aligned}
+  $$</li>
+<li><strong>Sequence likelihood (Forward):</strong> <span class="arithmatex">\(\alpha_t(s)\)</span>
+  $$
+  \alpha_1(s) = \pi_s\, b_{s,x_1},\qquad
+  \alpha_t(s) = b_{s,x_t} \sum_{u} \alpha_{t-1}(u) a_{u,s}.
+  $$</li>
+<li><strong>Posterior decoding (Forward‑Backward):</strong> <span class="arithmatex">\(\gamma_t(s) = p(y_t=s\mid x_{1:N})\)</span> using <span class="arithmatex">\(\alpha\)</span> and <span class="arithmatex">\(\beta\)</span>.</li>
+</ul>
+<h3 id="47-learning-brief">4.7 Learning (brief)<a class="headerlink" href="#47-learning-brief" title="Permanent link">&para;</a></h3>
+<p>With <strong>labeled</strong> data, estimate <span class="arithmatex">\(\pi, A, B\)</span> by count normalization (MLE) with smoothing (e.g., add‑<span class="arithmatex">\(\lambda\)</span>).</p>
+<p>With <strong>unlabeled</strong> data, use EM/<strong>Baum–Welch</strong>:</p>
+<ul>
+<li>E‑step: compute expected counts via forward‑backward (<span class="arithmatex">\(\gamma, \xi\)</span>).</li>
+<li>M‑step: renormalize to update <span class="arithmatex">\(\pi, A, B\)</span>.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Smoothing &amp; OOV</p>
+<p>Emission smoothing and an <strong>UNK</strong> token are essential for robust tagging.</p>
+</div>
+<hr />
+<h2 id="5-worked-toy-example">5. Worked toy example<a class="headerlink" href="#5-worked-toy-example" title="Permanent link">&para;</a></h2>
+<p>Sentence: <em>“the dog barks”</em>.</p>
+<p>We illustrate the decoding objective:</p>
+<div class="arithmatex">\[
+\hat{y}_{1:3} = \arg\max_{y_1,y_2,y_3} \; p(y_1)\,p(x_1\mid y_1)\,p(y_2\mid y_1)\,p(x_2\mid y_2)\,p(y_3\mid y_2)\,p(x_3\mid y_3).
+\]</div>
+<pre class="mermaid"><code>flowchart LR
+    y1((y₁)) --&gt; y2((y₂)) --&gt; y3((y₃))
+    y1 -.-&gt; x1([the])
+    y2 -.-&gt; x2([dog])
+    y3 -.-&gt; x3([barks])
+    classDef default fill:none,stroke-width:1px</code></pre>
+<p>A plausible best path is <strong>det → noun → verb</strong>, matching the POS intuition.</p>
+<hr />
+<h2 id="6-summary-next-steps">6. Summary &amp; Next Steps<a class="headerlink" href="#6-summary-next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Sequence tagging maps <span class="arithmatex">\(x_{1:N} \to y_{1:N}\)</span>; context resolves ambiguity.</li>
+<li>HMMs provide a clean generative baseline with efficient dynamic programming for likelihood and decoding.</li>
+<li>Next, we can add: <strong>CRFs</strong>, <strong>BiLSTM‑CRF</strong>, <strong>transformer‑based taggers</strong>, and comparisons (accuracy, data efficiency).</li>
+</ul>
+<hr />
+<h2 id="appendix-quick-reference">Appendix: Quick reference<a class="headerlink" href="#appendix-quick-reference" title="Permanent link">&para;</a></h2>
+<p><strong>Key equations</strong></p>
+<ul>
+<li>Joint factorization for HMM:
+  <span class="arithmatex">\(<span class="arithmatex">\(p(x_{1:N},y_{1:N}) = p(y_1) p(x_1\mid y_1) \prod_{t=2}^N p(y_t\mid y_{t-1}) p(x_t\mid y_t).\)</span>\)</span></li>
+<li>Marginal likelihood:
+  <span class="arithmatex">\(<span class="arithmatex">\(p(x_{1:N}) = \sum_{y_{1:N}} p(x_{1:N},y_{1:N}).\)</span>\)</span></li>
+<li>Viterbi recurrence:
+  <span class="arithmatex">\(<span class="arithmatex">\(\delta_t(s) = \max_u \{\delta_{t-1}(u) + \log a_{u,s}\} + \log b_{s,x_t}.\)</span>\)</span></li>
+<li>Forward recurrence:
+  <span class="arithmatex">\(<span class="arithmatex">\(\alpha_t(s) = b_{s,x_t} \sum_u \alpha_{t-1}(u) a_{u,s}.\)</span>\)</span></li>
+</ul>
+<p><strong>Glossary</strong></p>
+<ul>
+<li><span class="arithmatex">\(\mathcal{V}\)</span>: vocabulary of tokens.</li>
+<li><span class="arithmatex">\(\mathcal{S}\)</span>: set of tags/states.</li>
+<li><span class="arithmatex">\(\pi\)</span>: initial distribution over tags.</li>
+<li><span class="arithmatex">\(A\)</span>: transition matrix.</li>
+<li><span class="arithmatex">\(B\)</span>: emission probabilities.</li>
+</ul>
+<hr />
+<h1 id="hidden-markov-models-ultradetailed-addendum-mkdocs-mermaid-latex">Hidden Markov Models — Ultra‑Detailed Addendum (MkDocs + Mermaid + LaTeX)<a class="headerlink" href="#hidden-markov-models-ultradetailed-addendum-mkdocs-mermaid-latex" title="Permanent link">&para;</a></h1>
+<div class="admonition info">
+<p class="admonition-title">Scope</p>
+<p>This addendum expands your slides on <strong>HMM core tasks, Viterbi inference, Forward/Backward, likelihood, and training</strong>. It is MkDocs‑ready (Material admonitions, Mermaid diagrams, LaTeX math). Fully modular so we can grow it chapter by chapter.</p>
+</div>
+<hr />
+<h2 id="1-hmm-three-problems-to-solve">1. HMM: Three Problems to Solve<a class="headerlink" href="#1-hmm-three-problems-to-solve" title="Permanent link">&para;</a></h2>
+<p>Working with HMMs generally involves three canonical problems:</p>
+<ol>
+<li><strong>Inference / Decoding</strong><br />
+   Given observations <span class="arithmatex">\(x_{1:T}\)</span> and HMM parameters <span class="arithmatex">\((\pi, A, B)\)</span>, return the <strong>most probable hidden state sequence</strong> <span class="arithmatex">\(\hat{y}_{1:T}\)</span>.</li>
+<li><strong>Likelihood</strong><br />
+   Compute the <strong>overall likelihood</strong> of the observation sequence:<br />
+<span class="arithmatex">\(<span class="arithmatex">\(p_\theta(x_{1:T}) = \sum_{y_{1:T}} p_\theta(x_{1:T}, y_{1:T}).\)</span>\)</span></li>
+<li><strong>Training (Learning)</strong><br />
+   Given data (labeled or unlabeled), learn <span class="arithmatex">\(\theta=(\pi, A, B)\)</span> that best explains the data.</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Notation mapping</p>
+<p>Slide convention: <span class="arithmatex">\(N=\text{#states}\)</span>, <span class="arithmatex">\(T=\text{sequence length}\)</span>.<br />
+Elsewhere in these notes we sometimes write <span class="arithmatex">\(|\mathcal{S}|\)</span> for #states.</p>
+</div>
+<hr />
+<h2 id="2-lattice-view-paths-and-complexity">2. Lattice View, Paths, and Complexity<a class="headerlink" href="#2-lattice-view-paths-and-complexity" title="Permanent link">&para;</a></h2>
+<p>For a length‑<span class="arithmatex">\(T\)</span> sentence and <span class="arithmatex">\(N\)</span> tags/states, the <strong>state lattice</strong> has <span class="arithmatex">\(T\)</span> columns and <span class="arithmatex">\(N\)</span> nodes per column; edges represent transitions.</p>
+<pre class="mermaid"><code>flowchart LR
+  subgraph t1[ t=1 ]
+    d1((det))
+    n1((noun))
+    v1((verb))
+  end
+  subgraph t2[ t=2 ]
+    d2((det))
+    n2((noun))
+    v2((verb))
+  end
+  subgraph t3[ t=3 ]
+    d3((det))
+    n3((noun))
+    v3((verb))
+  end
+  d1--&gt;d2; d1--&gt;n2; d1--&gt;v2
+  n1--&gt;d2; n1--&gt;n2; n1--&gt;v2
+  v1--&gt;d2; v1--&gt;n2; v1--&gt;v2
+  d2--&gt;d3; d2--&gt;n3; d2--&gt;v3
+  n2--&gt;d3; n2--&gt;n3; n2--&gt;v3
+  v2--&gt;d3; v2--&gt;n3; v2--&gt;v3</code></pre>
+<ul>
+<li><strong>#Sequences:</strong> <span class="arithmatex">\(N^T\)</span> (e.g., 3 tags over 3 tokens ⇒ <span class="arithmatex">\(3^3=27\)</span> sequences).  </li>
+<li><strong>Dynamic programming</strong> avoids enumeration: inference/likelihood in <span class="arithmatex">\(\mathcal{O}(TN^2)\)</span>.</li>
+</ul>
+<hr />
+<h2 id="3-viterbi-algorithm-map-path">3. Viterbi Algorithm — MAP Path<a class="headerlink" href="#3-viterbi-algorithm-map-path" title="Permanent link">&para;</a></h2>
+<p>We seek <span class="arithmatex">\(\hat{y}_{1:T} = \arg\max_{y_{1:T}} p(y_{1:T}\mid x_{1:T})\)</span>; since <span class="arithmatex">\(p(x_{1:T})\)</span> is constant wrt <span class="arithmatex">\(y_{1:T}\)</span>, equivalently maximize the joint <span class="arithmatex">\(p(y_{1:T},x_{1:T})\)</span>.</p>
+<h3 id="31-recurrence-probability-domain">3.1 Recurrence (probability domain)<a class="headerlink" href="#31-recurrence-probability-domain" title="Permanent link">&para;</a></h3>
+<p>Let <span class="arithmatex">\(\delta_t(s)\)</span> be the best <strong>path probability</strong> ending at state <span class="arithmatex">\(s\)</span> at time <span class="arithmatex">\(t\)</span>, and <span class="arithmatex">\(\psi_t(s)\)</span> the <strong>backpointer</strong>:</p>
+<div class="arithmatex">\[
+\begin{aligned}
+\delta_1(s) &amp;= \pi_s\, b_{s,x_1},\\
+\delta_t(s) &amp;= b_{s,x_t}\, \max_{u\in\mathcal{S}} \delta_{t-1}(u)\, a_{u,s},\\
+\psi_t(s) &amp;= \arg\max_{u\in\mathcal{S}} \delta_{t-1}(u)\, a_{u,s}.
+\end{aligned}
+\]</div>
+<p><strong>Termination:</strong> <span class="arithmatex">\(\hat{y}_T = \arg\max_s \delta_T(s)\)</span><br />
+<strong>Backtrace:</strong> <span class="arithmatex">\(\hat{y}_{t-1} = \psi_t(\hat{y}_t)\)</span>.</p>
+<h3 id="32-logdomain-numerically-stable">3.2 Log‑domain (numerically stable)<a class="headerlink" href="#32-logdomain-numerically-stable" title="Permanent link">&para;</a></h3>
+<p>Define <span class="arithmatex">\(\Delta_t(s) = \log \delta_t(s)\)</span>:</p>
+<div class="arithmatex">\[
+\Delta_1(s)=\log\pi_s+\log b_{s,x_1},\qquad
+\Delta_t(s)=\log b_{s,x_t}+\max_u\{\Delta_{t-1}(u)+\log a_{u,s}\}.
+\]</div>
+<h3 id="33-worked-example-pos-the-dog-barks">3.3 Worked example (POS: <em>the dog barks</em>)<a class="headerlink" href="#33-worked-example-pos-the-dog-barks" title="Permanent link">&para;</a></h3>
+<p>Parameters from your slide tables (<span class="arithmatex">\(\pi, A, B\)</span> over tags det/noun/verb and words the/dog/barks):</p>
+<ul>
+<li><strong>Init (t=1, "the")</strong><br />
+<span class="arithmatex">\(\delta_1(\text{det})=0.5\cdot0.40=0.20\)</span>, <span class="arithmatex">\(\delta_1(\text{noun})=0\)</span>, <span class="arithmatex">\(\delta_1(\text{verb})=0\)</span>.</li>
+<li><strong>t=2 ("dog")</strong><br />
+<span class="arithmatex">\(\delta_2(\text{noun})=0.015\cdot\max\{0.20\cdot0.99,0,0\}=\mathbf{0.00297}\)</span>; others <span class="arithmatex">\(\approx0\)</span>.<br />
+  Backpointer: <span class="arithmatex">\(\psi_2(\text{noun})=\text{det}\)</span>.</li>
+<li><strong>t=3 ("barks")</strong><br />
+<span class="arithmatex">\(\delta_3(\text{verb})=0.020\cdot\max\{0,\;0.00297\cdot0.40,\;0\}=\mathbf{2.376\times10^{-5}}\)</span>;<br />
+<span class="arithmatex">\(\delta_3(\text{noun})=0.0031\cdot\max\{0,\;0.00297\cdot0.30,\;0\}=2.7621\times10^{-6}\)</span>.</li>
+</ul>
+<p><strong>Decoded path:</strong> det → noun → verb.</p>
+<pre class="mermaid"><code>flowchart LR
+  det1((det)) --&gt; noun2((noun)) --&gt; verb3((verb))
+  the([the]) -.-&gt; det1
+  dog([dog]) -.-&gt; noun2
+  barks([barks]) -.-&gt; verb3
+  classDef default fill:none,stroke-width:1px</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Viterbi vs. marginal argmax</p>
+<p>Viterbi gives the <strong>single best sequence</strong>. Tagging each position with <span class="arithmatex">\(\arg\max_s p(y_t=s\mid x_{1:T})\)</span> can yield a different (and suboptimal) global path.</p>
+</div>
+<hr />
+<h2 id="4-likelihood-via-the-forward-algorithm">4. Likelihood via the Forward Algorithm<a class="headerlink" href="#4-likelihood-via-the-forward-algorithm" title="Permanent link">&para;</a></h2>
+<p>We want <span class="arithmatex">\(p_\theta(x_{1:T})\)</span> without enumerating <span class="arithmatex">\(N^T\)</span> sequences.</p>
+<h3 id="41-forward-recurrences">4.1 Forward recurrences<a class="headerlink" href="#41-forward-recurrences" title="Permanent link">&para;</a></h3>
+<p>Let <span class="arithmatex">\(\alpha_t(s) = p(x_{1:t}, y_t=s)\)</span>:</p>
+<div class="arithmatex">\[
+\alpha_1(s)=\pi_s\,b_{s,x_1},\qquad
+\alpha_t(s)=b_{s,x_t}\sum_{u}\alpha_{t-1}(u) a_{u,s}.
+\]</div>
+<p><strong>Likelihood:</strong> <span class="arithmatex">\(p_\theta(x_{1:T}) = \sum_s \alpha_T(s)\)</span>.</p>
+<h3 id="42-complexity">4.2 Complexity<a class="headerlink" href="#42-complexity" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Naïve: <span class="arithmatex">\(\mathcal{O}(N^T)\)</span> (impractical).  </li>
+<li>Forward DP: <span class="arithmatex">\(\mathcal{O}(TN^2)\)</span> time; memory <span class="arithmatex">\(\mathcal{O}(TN)\)</span> (or <span class="arithmatex">\(\mathcal{O}(N)\)</span> streaming if no backpointers are needed).</li>
+</ul>
+<h3 id="43-numeric-check-same-toy-example">4.3 Numeric check (same toy example)<a class="headerlink" href="#43-numeric-check-same-toy-example" title="Permanent link">&para;</a></h3>
+<p><span class="arithmatex">\(\alpha_1=(0.20,0,0)\)</span>; <span class="arithmatex">\(\alpha_2(\text{noun})=0.00297\)</span>.<br />
+<span class="arithmatex">\(\alpha_3(\text{verb})=2.376\times10^{-5}\)</span>; <span class="arithmatex">\(\alpha_3(\text{noun})=2.7621\times10^{-6}\)</span>; hence<br />
+<span class="arithmatex">\(\boxed{p(x)=2.652\times10^{-5}}\)</span> and <span class="arithmatex">\(\log p(x)\approx-10.538\)</span>.</p>
+<h3 id="44-scaling-stability">4.4 Scaling / stability<a class="headerlink" href="#44-scaling-stability" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Scaled forward:</strong> define <span class="arithmatex">\(c_t = \big(\sum_s \tilde{\alpha}_t(s)\big)^{-1}\)</span> and set <span class="arithmatex">\(\alpha_t(s)=c_t\tilde{\alpha}_t(s)\)</span> so <span class="arithmatex">\(\sum_s \alpha_t(s)=1\)</span>. Then <span class="arithmatex">\(\log p(x_{1:T})=-\sum_{t=1}^T \log c_t\)</span>.</li>
+<li><strong>Log‑space:</strong> maintain <span class="arithmatex">\(\log\alpha_t(s)\)</span> using <code>logsumexp</code>.</li>
+</ul>
+<hr />
+<h2 id="5-backward-algorithm-and-posteriors">5. Backward Algorithm and Posteriors<a class="headerlink" href="#5-backward-algorithm-and-posteriors" title="Permanent link">&para;</a></h2>
+<p>Define <span class="arithmatex">\(\beta_t(s)=p(x_{t+1:T}\mid y_t=s)\)</span> with</p>
+<div class="arithmatex">\[
+\beta_T(s)=1,\qquad
+\beta_t(s)=\sum_{v} a_{s,v}\, b_{v,x_{t+1}}\, \beta_{t+1}(v).
+\]</div>
+<p>Posterior quantities:</p>
+<div class="arithmatex">\[
+\gamma_t(s)=\frac{\alpha_t(s)\,\beta_t(s)}{\sum_j \alpha_t(j)\,\beta_t(j)},\qquad
+\xi_t(u,v)=\frac{\alpha_t(u)\,a_{u,v}\,b_{v,x_{t+1}}\,\beta_{t+1}(v)}{\sum_{i,j} \alpha_t(i)\,a_{i,j}\,b_{j,x_{t+1}}\,\beta_{t+1}(j)}.
+\]</div>
+<p>These enable <strong>posterior decoding</strong> and <strong>Baum–Welch (EM)</strong>.</p>
+<hr />
+<h2 id="6-training-supervised-em">6. Training (Supervised &amp; EM)<a class="headerlink" href="#6-training-supervised-em" title="Permanent link">&para;</a></h2>
+<h3 id="61-supervised-mle-labeled-sequences">6.1 Supervised MLE (labeled sequences)<a class="headerlink" href="#61-supervised-mle-labeled-sequences" title="Permanent link">&para;</a></h3>
+<p>Counts → normalized probabilities (with smoothing):</p>
+<div class="arithmatex">\[
+\hat{\pi}_s = \operatorname{norm}_1\big(\text{count}(y_1=s)\big),\quad
+\hat{a}_{u,v} = \operatorname{norm}_1\big(\text{count}(y_{t-1}=u, y_t=v)\big),\quad
+\hat{b}_{s,w} = \operatorname{norm}_1\big(\text{count}(y_t=s, x_t=w)\big).
+\]</div>
+<h3 id="62-unlabeled-data-baumwelch-em">6.2 Unlabeled data — Baum–Welch (EM)<a class="headerlink" href="#62-unlabeled-data-baumwelch-em" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>E‑step:</strong> compute expected counts with forward–backward:<br />
+<span class="arithmatex">\(\bar{\pi}_s\leftarrow\gamma_1(s)\)</span>,<br />
+<span class="arithmatex">\(\bar{a}_{u,v}\leftarrow\sum_{t=1}^{T-1}\xi_t(u,v)\)</span>,<br />
+<span class="arithmatex">\(\bar{b}_{s,w}\leftarrow\sum_{t=1}^{T}\mathbb{1}[x_t=w]\,\gamma_t(s)\)</span>.</li>
+<li><strong>M‑step:</strong> renormalize rows/PMFs to update <span class="arithmatex">\(\pi, A, B\)</span> (plus add‑<span class="arithmatex">\(\lambda\)</span> smoothing).</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Smoothing &amp; OOV</p>
+<p>Use add‑<span class="arithmatex">\(\lambda\)</span> smoothing and an <strong>UNK</strong> token (or character/feature‑based emissions) for robustness.</p>
+</div>
+<hr />
+<h2 id="7-pseudocode-copypaste-ready">7. Pseudocode (copy‑paste ready)<a class="headerlink" href="#7-pseudocode-copypaste-ready" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">Viterbi</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="n">T</span><span class="p">],</span> <span class="n">π</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">S</span><span class="p">:</span> <span class="n">δ</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">π</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">*</span><span class="n">B</span><span class="p">[</span><span class="n">s</span><span class="p">,</span><span class="n">x1</span><span class="p">];</span> <span class="n">ψ</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">s</span><span class="p">]</span><span class="o">=</span><span class="n">NULL</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  <span class="k">for</span> <span class="n">t</span><span class="o">=</span><span class="mf">2.</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">S</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>      <span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span><span class="o">=</span><span class="n">max_u</span> <span class="p">(</span><span class="n">δ</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">u</span><span class="p">]</span><span class="o">*</span><span class="n">A</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="n">s</span><span class="p">])</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>      <span class="n">δ</span><span class="p">[</span><span class="n">t</span><span class="p">,</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">s</span><span class="p">,</span><span class="n">xt</span><span class="p">]</span><span class="o">*</span><span class="n">best</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>      <span class="n">ψ</span><span class="p">[</span><span class="n">t</span><span class="p">,</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  <span class="n">ŷ_T</span> <span class="o">=</span> <span class="n">argmax_s</span> <span class="n">δ</span><span class="p">[</span><span class="n">T</span><span class="p">,</span><span class="n">s</span><span class="p">]</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  <span class="k">for</span> <span class="n">t</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="mf">.2</span><span class="p">:</span> <span class="n">ŷ_</span><span class="p">{</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span> <span class="o">=</span> <span class="n">ψ</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">ŷ_t</span><span class="p">]</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  <span class="k">return</span> <span class="n">ŷ</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">Forward</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="n">T</span><span class="p">],</span> <span class="n">π</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">S</span><span class="p">:</span> <span class="n">α</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">π</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">*</span><span class="n">B</span><span class="p">[</span><span class="n">s</span><span class="p">,</span><span class="n">x1</span><span class="p">]</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  <span class="k">for</span> <span class="n">t</span><span class="o">=</span><span class="mf">2.</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">S</span><span class="p">:</span> <span class="n">α</span><span class="p">[</span><span class="n">t</span><span class="p">,</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">s</span><span class="p">,</span><span class="n">xt</span><span class="p">]</span> <span class="o">*</span> <span class="n">Σ_u</span> <span class="n">α</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">u</span><span class="p">]</span><span class="o">*</span><span class="n">A</span><span class="p">[</span><span class="n">u</span><span class="p">,</span><span class="n">s</span><span class="p">]</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  <span class="k">return</span> <span class="n">Σ_s</span> <span class="n">α</span><span class="p">[</span><span class="n">T</span><span class="p">,</span><span class="n">s</span><span class="p">]</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">Backward</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="n">T</span><span class="p">],</span> <span class="n">π</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">S</span><span class="p">:</span> <span class="n">β</span><span class="p">[</span><span class="n">T</span><span class="p">,</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>  <span class="k">for</span> <span class="n">t</span><span class="o">=</span><span class="n">T</span><span class="o">-</span><span class="mf">1..1</span><span class="p">:</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">S</span><span class="p">:</span> <span class="n">β</span><span class="p">[</span><span class="n">t</span><span class="p">,</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">Σ_v</span> <span class="n">A</span><span class="p">[</span><span class="n">s</span><span class="p">,</span><span class="n">v</span><span class="p">]</span><span class="o">*</span><span class="n">B</span><span class="p">[</span><span class="n">v</span><span class="p">,</span><span class="n">x_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">}]</span><span class="o">*</span><span class="n">β</span><span class="p">[</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">v</span><span class="p">]</span>
+</span></code></pre></div>
+<hr />
+<h2 id="8-implementation-notes-edge-cases">8. Implementation Notes &amp; Edge Cases<a class="headerlink" href="#8-implementation-notes-edge-cases" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Start/End states:</strong> optionally include explicit START/END; easiest is to fold START into <span class="arithmatex">\(\pi\)</span> and END into a final termination step.</li>
+<li><strong>Forbidden transitions:</strong> set <span class="arithmatex">\(a_{u,v}=0\)</span> (or <span class="arithmatex">\(-\infty\)</span> in log‑space); Viterbi will ignore them.</li>
+<li><strong>Beam search:</strong> prune states with low partial scores to speed decoding at a small accuracy cost.</li>
+<li><strong>Higher‑order HMMs:</strong> 2nd‑order uses <span class="arithmatex">\(p(y_t\mid y_{t-1},y_{t-2})\)</span>; cost <span class="arithmatex">\(\mathcal{O}(TN^3)\)</span>.</li>
+<li><strong>HSMMs (semi‑Markov):</strong> model explicit durations; useful for long spans.</li>
+<li><strong>Evaluation:</strong> token accuracy, sentence accuracy, per‑tag precision/recall, confusion matrices. Compare to trivial baselines (majority tag, suffix memorization).</li>
+</ul>
+<hr />
+<h2 id="9-quick-reference">9. Quick Reference<a class="headerlink" href="#9-quick-reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Joint factorization</strong><br />
+<span class="arithmatex">\(<span class="arithmatex">\(p(x_{1:T},y_{1:T}) = p(y_1) p(x_1\mid y_1) \prod_{t=2}^{T} p(y_t\mid y_{t-1}) p(x_t\mid y_t).\)</span>\)</span></li>
+<li><strong>Likelihood</strong><br />
+<span class="arithmatex">\(<span class="arithmatex">\(p(x_{1:T}) = \sum_{y_{1:T}} p(x_{1:T},y_{1:T}).\)</span>\)</span></li>
+<li><strong>Viterbi</strong><br />
+<span class="arithmatex">\(<span class="arithmatex">\(\delta_t(s) = b_{s,x_t} \max_u \delta_{t-1}(u) a_{u,s},\quad \psi_t(s)=\arg\max_u \delta_{t-1}(u) a_{u,s}.\)</span>\)</span></li>
+<li><strong>Forward</strong><br />
+<span class="arithmatex">\(<span class="arithmatex">\(\alpha_t(s) = b_{s,x_t} \sum_u \alpha_{t-1}(u) a_{u,s}.\)</span>\)</span></li>
+<li><strong>Backward</strong><br />
+<span class="arithmatex">\(<span class="arithmatex">\(\beta_t(s) = \sum_v a_{s,v} b_{v,x_{t+1}} \beta_{t+1}(v).\)</span>\)</span></li>
+<li><strong>Posteriors</strong><br />
+<span class="arithmatex">\(<span class="arithmatex">\(\gamma_t(s) = \frac{\alpha_t(s)\beta_t(s)}{\sum_j \alpha_t(j)\beta_t(j)},\quad \xi_t(u,v) = \frac{\alpha_t(u)a_{u,v}b_{v,x_{t+1}}\beta_{t+1}(v)}{\sum_{i,j} \alpha_t(i)a_{i,j}b_{j,x_{t+1}}\beta_{t+1}(j)}.\)</span>\)</span></li>
+</ul>
+<hr />
+<h1 id="hidden-markov-models-hmm-em-posteriors-applications-in-speech">Hidden Markov Models (HMM) — EM Posteriors &amp; Applications in Speech<a class="headerlink" href="#hidden-markov-models-hmm-em-posteriors-applications-in-speech" title="Permanent link">&para;</a></h1>
+<p>This document explains the <strong>Expectation–Maximization (EM, Baum–Welch)</strong> training procedure for HMMs, with <strong>posterior definitions</strong>, <strong>update rules</strong>, and <strong>applications in speech recognition (ASR)</strong>.<br />
+Includes multiple Mermaid diagrams for structure and intuition.</p>
+<hr />
+<h2 id="1-objective-1-initial-distribution">1. Objective 1 — Initial Distribution<a class="headerlink" href="#1-objective-1-initial-distribution" title="Permanent link">&para;</a></h2>
+<p>The initial state probabilities <span class="arithmatex">\(\pi_s\)</span> are updated using the posterior probability of being in state <span class="arithmatex">\(s\)</span> at time <span class="arithmatex">\(t=1\)</span>:</p>
+<div class="arithmatex">\[
+\pi_s \leftarrow \gamma_1(s), \qquad \sum_s \pi_s = 1.
+\]</div>
+<ul>
+<li>Intuition: the best estimate of how often each state is used to start a sequence.  </li>
+<li>Normalized automatically since <span class="arithmatex">\(\sum_s \gamma_1(s)=1\)</span>.</li>
+</ul>
+<hr />
+<h2 id="2-objective-2-transition-matrix-a">2. Objective 2 — Transition Matrix <span class="arithmatex">\(A\)</span><a class="headerlink" href="#2-objective-2-transition-matrix-a" title="Permanent link">&para;</a></h2>
+<p>We need the <strong>posterior of two adjacent states</strong> at time <span class="arithmatex">\(t-1\)</span> and <span class="arithmatex">\(t\)</span>:</p>
+<div class="arithmatex">\[
+p(y_{t-1}=s_i, y_t=s_m \mid x_{1:T}) \propto 
+\alpha_{t-1}(s_i)\, a_{s_i,s_m}\, b_{s_m,x_t}\, \beta_t(s_m).
+\]</div>
+<p>Normalizing:</p>
+<div class="arithmatex">\[
+\xi_t(s_i,s_m) = \frac{\alpha_{t-1}(s_i)\, a_{s_i,s_m}\, b_{s_m,x_t}\, \beta_t(s_m)}{\sum_{u,v}\alpha_{t-1}(u)\, a_{u,v}\, b_{v,x_t}\, \beta_t(v)}.
+\]</div>
+<p><strong>Transition update:</strong></p>
+<div class="arithmatex">\[
+a_{s_i,s_m} \leftarrow \frac{\sum_{t=2}^T \xi_t(s_i,s_m)}{\sum_{t=2}^T \sum_v \xi_t(s_i,v)}.
+\]</div>
+<ul>
+<li>Numerator = expected number of transitions <span class="arithmatex">\(s_i \to s_m\)</span>  </li>
+<li>Denominator = expected number of transitions leaving <span class="arithmatex">\(s_i\)</span>  </li>
+<li>Each row of <span class="arithmatex">\(A\)</span> is renormalized to sum to 1.</li>
+</ul>
+<hr />
+<h2 id="3-objective-3-emission-matrix-b">3. Objective 3 — Emission Matrix <span class="arithmatex">\(B\)</span><a class="headerlink" href="#3-objective-3-emission-matrix-b" title="Permanent link">&para;</a></h2>
+<p>The <strong>state occupancy posterior</strong> is:</p>
+<div class="arithmatex">\[
+\gamma_t(s) = p(y_t=s \mid x_{1:T})
+= \frac{\alpha_t(s)\, \beta_t(s)}{\sum_j \alpha_t(j)\, \beta_t(j)}.
+\]</div>
+<p><strong>Emission update (discrete symbols):</strong></p>
+<div class="arithmatex">\[
+b_{s,v_k} \leftarrow 
+\frac{\sum_{t=1}^T \mathbf{1}[x_t=v_k]\, \gamma_t(s)}{\sum_{t=1}^T \gamma_t(s)}.
+\]</div>
+<ul>
+<li>Numerator = expected number of times in state <span class="arithmatex">\(s\)</span> emitting symbol <span class="arithmatex">\(v_k\)</span>  </li>
+<li>Denominator = expected number of times in state <span class="arithmatex">\(s\)</span>  </li>
+</ul>
+<p>For <strong>continuous features (speech)</strong>, <span class="arithmatex">\(b_s(x)\)</span> is parameterized as a PDF (e.g., Gaussian or GMM). Updates use weighted maximum-likelihood with <span class="arithmatex">\(\gamma_t(s)\)</span> as responsibilities.</p>
+<hr />
+<h2 id="4-em-objective-function">4. EM Objective Function<a class="headerlink" href="#4-em-objective-function" title="Permanent link">&para;</a></h2>
+<p>The EM auxiliary function:</p>
+<div class="arithmatex">\[
+Q(\theta,\theta_i)
+= \mathbb{E}_{y_{1:T}\sim p(\cdot\mid x_{1:T},\theta_i)}\Big[
+\log p_\theta(y_1) + \sum_{t=2}^T \log p_\theta(y_t \mid y_{t-1})
++ \sum_{t=1}^T \log p_\theta(x_t \mid y_t)\Big].
+\]</div>
+<p>This decomposes naturally into:
+- Initial distribution (<span class="arithmatex">\(\pi\)</span>)
+- Transition matrix (<span class="arithmatex">\(A\)</span>)
+- Emission distributions (<span class="arithmatex">\(B\)</span>)</p>
+<p>Each has a closed-form update (the ones above).</p>
+<hr />
+<h2 id="5-applications-in-speech-recognition-asr">5. Applications in Speech Recognition (ASR)<a class="headerlink" href="#5-applications-in-speech-recognition-asr" title="Permanent link">&para;</a></h2>
+<p>The decoding objective:</p>
+<div class="arithmatex">\[
+W^* = \arg\max_W\; p(X \mid W)\, p(W),
+\]</div>
+<p>where <span class="arithmatex">\(X = x_{1:T}\)</span> is the feature sequence (MFCC / FBANK).</p>
+<ul>
+<li><strong>Acoustic model (HMM):</strong><br />
+  States correspond to phones or sub-phones, with self-loops <span class="arithmatex">\(a_{s,s}\)</span> for duration modeling and forward transitions <span class="arithmatex">\(a_{s,s'}\)</span> for progression.  </li>
+<li><strong>Emissions:</strong> <span class="arithmatex">\(b_s(x)\)</span> are PDFs of feature vectors.  </li>
+<li>Classical: <strong>GMM-HMM</strong>  </li>
+<li>Modern hybrid: <strong>DNN outputs</strong> as state posteriors, combined with HMM structure.  </li>
+<li><strong>Language model (LM):</strong> <span class="arithmatex">\(p(W)\)</span> encodes word sequence probability.  </li>
+<li><strong>Decoding:</strong> Viterbi / beam search over HMM graph + lexicon + LM.</li>
+</ul>
+<hr />
+<h2 id="6-mermaid-diagrams">6. Mermaid Diagrams<a class="headerlink" href="#6-mermaid-diagrams" title="Permanent link">&para;</a></h2>
+<h3 id="61-speech-recognition-pipeline">6.1 Speech recognition pipeline<a class="headerlink" href="#61-speech-recognition-pipeline" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+  Audio["Audio waveform"]
+  Feats["Feature extraction (MFCC / FBANK)"]
+  HMM["Acoustic HMM (states, a(u,v))"]
+  Decode["Viterbi / Beam search"]
+  LM["Language model p(W)"]
+  Words["Best hypothesis W*"]
+
+  Audio --&gt; Feats --&gt; HMM --&gt; Decode --&gt; Words
+  LM --&gt; Decode</code></pre>
+<hr />
+<h3 id="62-hmm-topology-one-phone-left-to-right-with-self-loops">6.2 HMM topology (one phone, left-to-right with self-loops)<a class="headerlink" href="#62-hmm-topology-one-phone-left-to-right-with-self-loops" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+  Start([Start]) --&gt; S1
+
+  subgraph Phone_HMM
+    direction LR
+    S1["State s1"] --&gt;|forward| S2["State s2"]
+    S2 --&gt;|forward| S3["State s3"]
+    S1 -- "self loop a(s1,s1)" --&gt; S1
+    S2 -- "self loop a(s2,s2)" --&gt; S2
+    S3 -- "self loop a(s3,s3)" --&gt; S3
+  end
+
+  S3 --&gt; End([End])
+</code></pre>
+<hr />
+<h3 id="63-forwardbackward-message-passing-per-time-step">6.3 Forward–Backward message passing (per time step)<a class="headerlink" href="#63-forwardbackward-message-passing-per-time-step" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+  X1["x1"] --&gt; T1["Time 1"]
+  X2["x2"] --&gt; T2["Time 2"]
+  X3["x3"] --&gt; T3["Time 3"]
+  X4["x4"] --&gt; T4["Time 4"]
+
+  T1 --&gt;|alpha forward| T2 --&gt;|alpha| T3 --&gt;|alpha| T4
+  T4 -.-&gt;|beta backward| T3 -.-&gt;|beta| T2 -.-&gt;|beta| T1</code></pre>
+<hr />
+<h3 id="64-em-dependency-map-what-feeds-what">6.4 EM dependency map (what feeds what)<a class="headerlink" href="#64-em-dependency-map-what-feeds-what" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TB
+  X["Observations x(1:T)"] --&gt; Alpha["Compute alpha"]
+  X --&gt; Beta["Compute beta"]
+  Alpha --&gt; Gamma["State posteriors gamma(t,s)"]
+  Beta  --&gt; Gamma
+  Alpha --&gt; Xi["Transition posteriors xi(t,i,m)"]
+  Beta  --&gt; Xi
+
+  Gamma --&gt; Pi["Update initial pi"]
+  Gamma --&gt; B["Update emissions B"]
+  Xi --&gt; A["Update transitions A"]</code></pre>
+<hr />
+<h2 id="7-quick-reference">7. Quick Reference<a class="headerlink" href="#7-quick-reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p><strong>Forward probability</strong>: <span class="arithmatex">\(\alpha_t(s)\)</span></p>
+</li>
+<li>
+<p><strong>Backward probability</strong>: <span class="arithmatex">\(\beta_t(s)\)</span></p>
+</li>
+<li>
+<p><strong>Two-state posterior</strong>: <span class="arithmatex">\(\xi_t(s_i,s_m)\)</span></p>
+</li>
+<li>
+<p><strong>Single-state posterior</strong>: <span class="arithmatex">\(\gamma_t(s)\)</span></p>
+</li>
+<li>
+<p><strong>Updates</strong>:</p>
+<ul>
+<li>
+<p><span class="arithmatex">\(\pi_s \leftarrow \gamma_1(s)\)</span></p>
+</li>
+<li>
+<p><span class="arithmatex">\(a_{s_i,s_m} \leftarrow \dfrac{\sum_t \xi_t(s_i,s_m)}{\sum_t \sum_v \xi_t(s_i,v)}\)</span></p>
+</li>
+<li>
+<p><span class="arithmatex">\(b_{s,v_k} \leftarrow \dfrac{\sum_t \mathbf{1}[x_t=v_k] \gamma_t(s)}{\sum_t \gamma_t(s)}\)</span></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Constraints</strong>: Row-stochastic normalization, clamp small negatives to <span class="arithmatex">\(0\)</span>.</p>
+</li>
+<li>
+<p><strong>Speech link</strong>: HMM + Emission PDFs + LM → decoding.</p>
+</li>
+</ul>
+<hr />
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 24, 2025 03:56:26 UTC">August 24, 2025</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../lecture4/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Unsupervised Learning">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Unsupervised Learning
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../cheatsheets/" class="md-footer__link md-footer__link--next" aria-label="Next: Cheatsheets">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Cheatsheets
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/adityachauhan0" target="_blank" rel="noopener" title="GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.footer", "toc.integrate", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips", "header.autohide", "content.action.edit", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+      
+        <script src="../../js/katex-init.js"></script>
+      
+    
+  </body>
+</html>
