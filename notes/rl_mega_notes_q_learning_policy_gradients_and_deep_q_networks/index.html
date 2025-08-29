@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://adityachauhan0.github.io/amazon-ml/notes/lec6/">
+        <link rel="canonical" href="https://adityachauhan0.github.io/amazon-ml/notes/rl_mega_notes_q_learning_policy_gradients_and_deep_q_networks/">
       
       
-        <link rel="prev" href="../lec5/">
-      
-      
-        <link rel="next" href="../../cheatsheets/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +20,7 @@
     
     
       
-        <title>Reinforcement Learning - Machine Learning Notes</title>
+        <title>Reinforcement Learning — Advanced, No‑Detail‑Left‑Behind Notes - Machine Learning Notes</title>
       
     
     
@@ -78,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#reinforcement-learning-rl-notes" class="md-skip">
+        <a href="#reinforcement-learning-advanced-nodetailleftbehind-notes" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Reinforcement Learning
+              Reinforcement Learning — Advanced, No‑Detail‑Left‑Behind Notes
             
           </span>
         </div>
@@ -257,12 +253,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../lecture3/" class="md-tabs__link">
           
   
@@ -369,10 +363,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -388,22 +380,19 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -416,7 +405,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Notes
@@ -496,32 +485,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Reinforcement Learning
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../lec6/" class="md-nav__link">
         
   
   
@@ -532,161 +499,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-is-reinforcement-learning-rl" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 What is Reinforcement Learning (RL)?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#difference-between-supervised-learning-and-rl" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Difference Between Supervised Learning and RL
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#agentenvironment-loop" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Agent–Environment Loop
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#markov-decision-process-mdp" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Markov Decision Process (MDP)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#discount-factor-gamma" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Discount Factor (\(\gamma\))
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exploration-vs-exploitation-dilemma" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Exploration vs Exploitation Dilemma
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#multi-armed-bandit-mab-problem" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Multi-Armed Bandit (MAB) Problem
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#regret-in-bandits" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Regret in Bandits
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#epsilon-greedy-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Epsilon-Greedy Strategy
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#upper-confidence-bound-ucb" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Upper Confidence Bound (UCB)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#thompson-sampling" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Thompson Sampling
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contextual-bandits" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Contextual Bandits
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contextual-bandit-algorithms" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Contextual Bandit Algorithms
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#summary-of-contextual-bandits" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Summary of Contextual Bandits
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#big-picture" class="md-nav__link">
-    <span class="md-ellipsis">
-      📌 Big Picture
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -737,7 +549,7 @@
 
 
   
-    <a href="https://github.com/adityachauhan0/amazon-ml/edit/main/docs/notes/lec6.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/adityachauhan0/amazon-ml/edit/main/docs/notes/rl_mega_notes_q_learning_policy_gradients_and_deep_q_networks.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -746,297 +558,13 @@
     
       
     
-    <a href="https://github.com/adityachauhan0/amazon-ml/raw/main/docs/notes/lec6.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/adityachauhan0/amazon-ml/raw/main/docs/notes/rl_mega_notes_q_learning_policy_gradients_and_deep_q_networks.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="reinforcement-learning-rl-notes">Reinforcement Learning (RL) Notes<a class="headerlink" href="#reinforcement-learning-rl-notes" title="Permanent link">&para;</a></h1>
-<h2 id="what-is-reinforcement-learning-rl">📌 What is Reinforcement Learning (RL)?<a class="headerlink" href="#what-is-reinforcement-learning-rl" title="Permanent link">&para;</a></h2>
-<p>Reinforcement Learning (RL) is a <strong>computational framework for sequential decision making</strong>. The central idea is that an <strong>agent</strong> learns to interact with an <strong>environment</strong> in order to maximize some notion of <strong>cumulative reward</strong>.</p>
-<ul>
-<li><strong>Key Characteristics:</strong></li>
-<li><strong>Sequential:</strong> Decisions happen over time, not independently.</li>
-<li><strong>Trial-and-error learning:</strong> The agent must try actions and learn from feedback.</li>
-<li><strong>Delayed consequences:</strong> Rewards may not be immediate, requiring planning.</li>
-<li><strong>Exploration vs exploitation:</strong> Balance between trying new actions vs. leveraging known good ones.</li>
-</ul>
-<pre class="mermaid"><code>flowchart TD
-    subgraph RL [Reinforcement Learning Framework]
-        A[Agent] -- Action/Control --&gt; E[Environment]
-        E -- State/Observation --&gt; A
-        E -- Reward/Cost --&gt; A
-    end</code></pre>
-<hr />
-<h2 id="difference-between-supervised-learning-and-rl">📌 Difference Between Supervised Learning and RL<a class="headerlink" href="#difference-between-supervised-learning-and-rl" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Aspect</th>
-<th>Supervised Learning</th>
-<th>Reinforcement Learning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Training Data</td>
-<td>Pre-collected, labeled</td>
-<td>No initial dataset; learns through interaction</td>
-</tr>
-<tr>
-<td>Labels</td>
-<td>Always known</td>
-<td>Rewards are <strong>unknown</strong>, possibly stochastic</td>
-</tr>
-<tr>
-<td>Assumptions</td>
-<td>IID data</td>
-<td>Data is sequential, non-IID</td>
-</tr>
-<tr>
-<td>Goal</td>
-<td>Minimize prediction error</td>
-<td>Maximize cumulative reward over time</td>
-</tr>
-<tr>
-<td>Example</td>
-<td>Spam filtering, regression</td>
-<td>Robot navigation, recommendation systems</td>
-</tr>
-</tbody>
-</table>
-<pre class="mermaid"><code>flowchart LR
-    SL[Supervised Learning] --&gt;|Pre-collected Data| Model
-    RL[Reinforcement Learning] --&gt;|Interaction| Env
-    Env --&gt;|Reward/Next State| RL</code></pre>
-<hr />
-<h2 id="agentenvironment-loop">📌 Agent–Environment Loop<a class="headerlink" href="#agentenvironment-loop" title="Permanent link">&para;</a></h2>
-<p>At each discrete time step <span class="arithmatex">\(t\)</span>:
-1. Agent observes <strong>state</strong> <span class="arithmatex">\(S_t\)</span>.
-2. Agent selects an <strong>action</strong> <span class="arithmatex">\(A_t\)</span>.
-3. Environment responds with a <strong>reward</strong> <span class="arithmatex">\(R_t\)</span> and a new <strong>state</strong> <span class="arithmatex">\(S_{t+1}\)</span>.</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Agent
-    participant Environment
-
-    Agent-&gt;&gt;Environment: Selects Action $A_t$
-    Environment--&gt;&gt;Agent: Returns Reward $R_t$
-    Environment--&gt;&gt;Agent: Provides Next State $S_{t+1}$</code></pre>
-<p>Mathematically:
-$$
-S_t \xrightarrow{A_t} S_{t+1}, \quad R_t = R(S_t, A_t)
-$$</p>
-<hr />
-<h2 id="markov-decision-process-mdp">📌 Markov Decision Process (MDP)<a class="headerlink" href="#markov-decision-process-mdp" title="Permanent link">&para;</a></h2>
-<p>An MDP provides the <strong>mathematical foundation</strong> for RL. Defined as a tuple:
-$$
-(S, A, R, P, \gamma)
-$$</p>
-<ul>
-<li><strong>States (S):</strong> The set of all possible configurations of the environment.</li>
-<li><strong>Actions (A):</strong> The set of possible moves the agent can make.</li>
-<li><strong>Reward function (R):</strong> Maps <span class="arithmatex">\((s, a)\)</span> to a scalar signal.</li>
-<li><strong>Transition probabilities (P):</strong>
-  $$ P_a(s,s') = Pr(S_{t+1}=s'|S_t=s, A_t=a) $$</li>
-<li><strong>Discount factor (<span class="arithmatex">\(\gamma\)</span>):</strong> Weighs immediate vs. future rewards.</li>
-</ul>
-<blockquote>
-<p><strong>Objective:</strong>
-Maximize the expected discounted return:
-$$
-G_t = E\left[ \sum_{k=0}^\infty \gamma^k R_{t+k+1} \right]
-$$</p>
-</blockquote>
-<pre class="mermaid"><code>flowchart LR
-    S0((S0)) --&gt;|A0| S1((S1))
-    S1 --&gt;|A1| S2((S2))
-    S2 --&gt;|A2| S3((S3))
-    S3 --&gt;|...| S4((...))</code></pre>
-<hr />
-<h2 id="discount-factor-gamma">📌 Discount Factor (<span class="arithmatex">\(\gamma\)</span>)<a class="headerlink" href="#discount-factor-gamma" title="Permanent link">&para;</a></h2>
-<p>The <strong>discount factor</strong> <span class="arithmatex">\(\gamma \in [0,1]\)</span> represents how much future rewards are valued relative to immediate ones.</p>
-<ul>
-<li>If <span class="arithmatex">\(\gamma = 0\)</span> → Only immediate rewards matter.</li>
-<li>If <span class="arithmatex">\(\gamma = 1\)</span> → Future rewards are valued equally as present ones.</li>
-<li>Typically: <span class="arithmatex">\(0 &lt; \gamma &lt; 1\)</span> for balance.</li>
-</ul>
-<p>Example:
-- Predicting stock prices 5 years from now is uncertain → lower weight.
-- Receiving $10 today vs. $10 after 5 years → prefer immediate.</p>
-<div class="arithmatex">\[
-V(s) = E\left[ R_0 + \gamma R_1 + \gamma^2 R_2 + \dots \mid S_0=s \right]
-\]</div>
-<pre class="mermaid"><code>flowchart TD
-    Now[Immediate Reward] -. High Weight .-&gt; Utility
-    Future[Future Reward] -. Discounted by γ .-&gt; Utility</code></pre>
-<hr />
-<h2 id="exploration-vs-exploitation-dilemma">📌 Exploration vs Exploitation Dilemma<a class="headerlink" href="#exploration-vs-exploitation-dilemma" title="Permanent link">&para;</a></h2>
-<p>The agent must <strong>explore</strong> new actions to learn but also <strong>exploit</strong> known good ones to maximize reward.</p>
-<ul>
-<li><strong>Exploration:</strong> Try less-known actions → gather information.</li>
-<li><strong>Exploitation:</strong> Choose best-known action → maximize immediate reward.</li>
-</ul>
-<p>Examples:
-- Restaurant choice: try new vs. go to favorite.
-- Music: listen to fav vs. discover new.</p>
-<pre class="mermaid"><code>flowchart TD
-    Start --&gt;|Exploration| TryNew[Try a New Action]
-    Start --&gt;|Exploitation| Best[Choose Best Known Action]</code></pre>
-<hr />
-<h2 id="multi-armed-bandit-mab-problem">📌 Multi-Armed Bandit (MAB) Problem<a class="headerlink" href="#multi-armed-bandit-mab-problem" title="Permanent link">&para;</a></h2>
-<p>Simplest RL setting:
-- One state only.
-- Multiple actions (arms).
-- Each arm yields a random reward.</p>
-<ul>
-<li><strong>Tuple:</strong> <span class="arithmatex">\((A, R)\)</span></li>
-<li><strong>Actions (A):</strong> Finite set of arms <span class="arithmatex">\(\{a_1, a_2, ..., a_m\}\)</span></li>
-<li><strong>Rewards (R):</strong> Unknown distributions.</li>
-</ul>
-<p>At each step <span class="arithmatex">\(t\)</span>:
-- Agent picks <span class="arithmatex">\(A_t\)</span>.
-- Environment provides <span class="arithmatex">\(R_t\)</span>.</p>
-<p><strong>Goal:</strong>
-$$
-\max E \left[ \sum_{t=1}^T R_t \right]
-$$</p>
-<pre class="mermaid"><code>flowchart LR
-    Agent --&gt;|Pull Arm| Slot[Slot Machine Arms]
-    Slot --&gt;|Reward| Agent</code></pre>
-<hr />
-<h2 id="regret-in-bandits">📌 Regret in Bandits<a class="headerlink" href="#regret-in-bandits" title="Permanent link">&para;</a></h2>
-<p>Regret quantifies <strong>how much reward was lost compared to the optimal policy</strong>.</p>
-<ul>
-<li>Mean reward of action <span class="arithmatex">\(A\)</span>:
-$$ V_A = E_{R \sim R_A}[R|A] $$</li>
-<li>Optimal action:
-$$ A^* = \arg\max_A V_A $$</li>
-<li>Regret after <span class="arithmatex">\(T\)</span> rounds:
-$$ Regret(T) = T \cdot V_{A^*} - \sum_{t=1}^T V_{A_t} $$</li>
-</ul>
-<pre class="mermaid"><code>flowchart LR
-    Opt[Optimal Arm A*] --&gt; HighReward
-    Agent[Chosen Arms] --&gt; ActualReward
-    HighReward -. difference .-&gt; Regret</code></pre>
-<hr />
-<h2 id="epsilon-greedy-strategy">📌 Epsilon-Greedy Strategy<a class="headerlink" href="#epsilon-greedy-strategy" title="Permanent link">&para;</a></h2>
-<ul>
-<li>With probability <span class="arithmatex">\(\epsilon\)</span>: pick a random arm (exploration).</li>
-<li>With probability <span class="arithmatex">\(1-\epsilon\)</span>: pick the best-known arm (exploitation).</li>
-</ul>
-<pre class="mermaid"><code>flowchart TD
-    Start --&gt;|ε| Rand[Choose Random Arm]
-    Start --&gt;|1-ε| Best[Choose Best Arm]
-    Rand --&gt; Arms
-    Best --&gt; Arms
-    Arms[Reward Observed]</code></pre>
-<p>Variants:
-- <strong>ε-first:</strong> Explore first few rounds, then exploit.
-- <strong>ε-decreasing:</strong> Reduce <span class="arithmatex">\(ε\)</span> over time.</p>
-<hr />
-<h2 id="upper-confidence-bound-ucb">📌 Upper Confidence Bound (UCB)<a class="headerlink" href="#upper-confidence-bound-ucb" title="Permanent link">&para;</a></h2>
-<p>Balances exploration and exploitation via confidence intervals.</p>
-<ul>
-<li>Estimate mean reward <span class="arithmatex">\(\bar V_a\)</span>.</li>
-<li>Add exploration bonus:
-$$
-UCB_a(t) = \bar V_a + \sqrt{\frac{2 \ln t}{N_a(t)}}
-$$</li>
-</ul>
-<pre class="mermaid"><code>flowchart LR
-    Est[Estimate Mean Reward] --&gt; Bonus[Add Confidence Bonus]
-    Bonus --&gt; UCB[UCB Score]
-    UCB --&gt; Select[Choose Best Arm]</code></pre>
-<hr />
-<h2 id="thompson-sampling">📌 Thompson Sampling<a class="headerlink" href="#thompson-sampling" title="Permanent link">&para;</a></h2>
-<p>Bayesian method: sample parameters from posterior and act greedily.</p>
-<p>Steps:
-1. Assume prior distribution <span class="arithmatex">\(p(\theta)\)</span>.
-2. Update posterior <span class="arithmatex">\(p(\theta|D_t)\)</span> using Bayes’ theorem.
-3. Sample parameter from posterior.
-4. Choose action maximizing expected reward.</p>
-<p>For Bernoulli rewards:
-- Prior: Beta(<span class="arithmatex">\(\alpha, \beta\)</span>).
-- Posterior after <span class="arithmatex">\(N\)</span> trials:
-$$
-p(\theta|D_t) = Beta(\alpha + \text{successes}, \beta + \text{failures})
-$$</p>
-<pre class="mermaid"><code>flowchart TD
-    Prior["Prior Beta(α,β)"] --&gt; Posterior["Update with Data"]
-    Posterior --&gt; Sample["Sample θ from Posterior"]
-    Sample --&gt; Action["Choose Arm with Max θ"]
-</code></pre>
-<hr />
-<h2 id="contextual-bandits">📌 Contextual Bandits<a class="headerlink" href="#contextual-bandits" title="Permanent link">&para;</a></h2>
-<p>Unlike MAB, <strong>contextual bandits</strong> incorporate <strong>features of states and actions</strong>.</p>
-<ul>
-<li>State (context): user demographics, time, history.</li>
-<li>Action: item/arm to show.</li>
-<li>Reward: observed click/purchase.</li>
-</ul>
-<p>Tuple: <span class="arithmatex">\((S,A,R)\)</span></p>
-<p>At each step:
-1. Environment provides context <span class="arithmatex">\(s_t\)</span>.
-2. Agent selects action <span class="arithmatex">\(a_t\)</span>.
-3. Environment returns reward <span class="arithmatex">\(r_t\)</span>.</p>
-<p><strong>Objective:</strong>
-$$
-\max \sum_{t=1}^T E[r_t | s_t, a_t]
-$$</p>
-<pre class="mermaid"><code>flowchart LR
-    Context[Context Features] --&gt; Agent
-    Agent --&gt;|Action a_t| Item[Chosen Item]
-    Item --&gt; Reward[r_t]</code></pre>
-<hr />
-<h2 id="contextual-bandit-algorithms">📌 Contextual Bandit Algorithms<a class="headerlink" href="#contextual-bandit-algorithms" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>ε-greedy with context:</strong> Use predictive model <span class="arithmatex">\(f(s,a)\)</span> for reward estimation.</li>
-<li><strong>Linear UCB:</strong>
-  $$ q_\theta(s,a) = \phi(s,a)^T \theta $$</li>
-<li><strong>Contextual Thompson Sampling:</strong> Posterior inference over contextual parameters.</li>
-</ul>
-<hr />
-<h2 id="summary-of-contextual-bandits">📌 Summary of Contextual Bandits<a class="headerlink" href="#summary-of-contextual-bandits" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Algorithm</th>
-<th>Strengths</th>
-<th>Weaknesses</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ε-Greedy</td>
-<td>Easy, simple</td>
-<td>Sensitive to ε tuning</td>
-</tr>
-<tr>
-<td>UCB</td>
-<td>Theoretically strong</td>
-<td>Computationally heavy</td>
-</tr>
-<tr>
-<td>Thompson Sampling</td>
-<td>Handles uncertainty</td>
-<td>Posterior inference hard</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="big-picture">📌 Big Picture<a class="headerlink" href="#big-picture" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Multi-armed bandits:</strong> No context.</li>
-<li><strong>Contextual bandits:</strong> Context-aware recommendations.</li>
-<li><strong>Full RL (MDP):</strong> Sequential, long-term decision-making.</li>
-</ul>
-<pre class="mermaid"><code>flowchart LR
-    Bandit[Multi-Armed Bandit] --&gt; Contextual[Contextual Bandit]
-    Contextual --&gt; RL[Full Reinforcement Learning]</code></pre>
-<p>Reinforcement Learning spans from <strong>simple bandits</strong> to <strong>complex long-horizon planning problems</strong> like robotics, healthcare, and recommendation systems.</p>
-<hr />
 <h1 id="reinforcement-learning-advanced-nodetailleftbehind-notes">Reinforcement Learning — Advanced, No‑Detail‑Left‑Behind Notes<a class="headerlink" href="#reinforcement-learning-advanced-nodetailleftbehind-notes" title="Permanent link">&para;</a></h1>
 <p>These notes expand your earlier summary with deep, implementation‑ready detail that covers <strong>tabular Q‑learning</strong>, <strong>policy gradients / REINFORCE</strong>, and <strong>Deep Q‑Learning (DQN)</strong> with the practical tricks used in Atari‑style setups.</p>
 <hr />
@@ -1399,44 +927,6 @@ This curbs the positive bias from <span class="arithmatex">\(\max\)</span> over 
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../lec5/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Sequential Learning">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Sequential Learning
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../../cheatsheets/" class="md-footer__link md-footer__link--next" aria-label="Next: Cheatsheets">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Cheatsheets
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">
